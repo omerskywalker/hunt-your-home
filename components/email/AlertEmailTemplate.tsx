@@ -27,10 +27,10 @@ export function AlertEmailTemplate({ listing, tier }: AlertEmailTemplateProps) {
 
   const scoreColor =
     listing.aiScore >= 8
-      ? "#f97316"
+      ? "#39D353"
       : listing.aiScore >= 6
-      ? "#71717a"
-      : "#52525b";
+      ? "#58A6FF"
+      : "#484F58";
 
   const photoUrl =
     listing.photos?.[0] ??
@@ -58,7 +58,7 @@ export function AlertEmailTemplate({ listing, tier }: AlertEmailTemplateProps) {
                 <Text
                   style={{
                     ...styles.tierBadge,
-                    backgroundColor: isHot ? "#f97316" : "#3f3f46",
+                    backgroundColor: isHot ? "#FF6B35" : "#58A6FF",
                   }}
                 >
                   {tierLabel}
@@ -199,14 +199,30 @@ export function AlertEmailTemplate({ listing, tier }: AlertEmailTemplateProps) {
             <Button href={listing.zillowUrl} style={styles.ctaButton}>
               View on Zillow →
             </Button>
+            <Button
+              href={process.env.NEXT_PUBLIC_APP_URL ?? "https://hunt-your-home.vercel.app"}
+              style={styles.ctaButtonSecondary}
+            >
+              Open Dashboard →
+            </Button>
           </Section>
 
           {/* Footer */}
           <Section style={styles.footer}>
-            <Text style={styles.footerText}>Powered by HuntYourHome</Text>
+            <Text style={styles.footerText}>
+              <span style={{ color: "#39D353" }}>Hunt</span>
+              <span style={{ color: "#E6EDF3", fontWeight: 700 }}>Your</span>
+              <span style={{ color: "#39D353" }}>Home</span>
+            </Text>
             <Text style={styles.footerMuted}>
               You received this because a new listing matched your saved search
-              criteria. To manage your preferences, visit your dashboard.
+              criteria.{" "}
+              <a
+                href={process.env.NEXT_PUBLIC_APP_URL ?? "https://hunt-your-home.vercel.app"}
+                style={{ color: "#39D353" }}
+              >
+                Manage preferences →
+              </a>
             </Text>
           </Section>
         </Container>
@@ -238,7 +254,7 @@ const styles: Record<string, React.CSSProperties> = {
   logo: {
     fontSize: "24px",
     fontWeight: "700",
-    color: "#f97316",
+    color: "#39D353",
     margin: 0,
     letterSpacing: "-0.5px",
   },
@@ -311,7 +327,7 @@ const styles: Record<string, React.CSSProperties> = {
     padding: "20px 32px",
   },
   aiSectionTitle: {
-    color: "#f97316",
+    color: "#39D353",
     fontSize: "12px",
     textTransform: "uppercase" as const,
     letterSpacing: "0.08em",
@@ -396,6 +412,19 @@ const styles: Record<string, React.CSSProperties> = {
     textDecoration: "none",
     display: "block",
     textAlign: "center" as const,
+    marginBottom: "12px",
+  },
+  ctaButtonSecondary: {
+    backgroundColor: "transparent",
+    color: "#39D353",
+    padding: "12px 40px",
+    borderRadius: "8px",
+    fontSize: "14px",
+    fontWeight: "600",
+    textDecoration: "none",
+    display: "block",
+    textAlign: "center" as const,
+    border: "1px solid #39D353",
   },
   footer: {
     backgroundColor: "#0f0f0f",
