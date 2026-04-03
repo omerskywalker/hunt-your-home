@@ -22,11 +22,28 @@ const spaceGrotesk = Space_Grotesk({
   weight: ["400", "500", "600", "700"],
 });
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://hunt-your-home.vercel.app";
+
 export const metadata: Metadata = {
   title: "HuntYourHome — Frisco TX Home Monitor",
   description:
     "AI-powered real estate monitoring for Frisco, TX. Get instant alerts when new homes matching your criteria hit Zillow.",
   keywords: ["real estate", "Frisco TX", "home search", "Zillow", "AI"],
+  metadataBase: new URL(APP_URL),
+  openGraph: {
+    title: "HuntYourHome — AI-powered home alerts for Frisco, TX",
+    description:
+      "Never miss a great listing. Zillow monitored 4× daily, every match scored by AI, alerts straight to your inbox.",
+    url: APP_URL,
+    siteName: "HuntYourHome",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "HuntYourHome — AI-powered home alerts for Frisco, TX",
+    description:
+      "Never miss a great listing. Zillow monitored 4× daily, every match scored by AI, alerts straight to your inbox.",
+  },
 };
 
 export default function RootLayout({
