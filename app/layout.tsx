@@ -5,6 +5,7 @@ import "./globals.css";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
 import { Toaster } from "sonner";
+import { Analytics } from "@vercel/analytics/next";
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 
@@ -77,6 +78,7 @@ export default function RootLayout({
             </span>
           </footer>
         </div>
+        <Analytics />
         <Toaster
           theme="dark"
           position="bottom-right"
