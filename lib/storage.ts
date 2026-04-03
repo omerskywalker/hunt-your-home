@@ -3,6 +3,8 @@ import {
   UserPreferences,
   AlertRecord,
   ScanRecord,
+  BookmarkedListing,
+  AIScoredListing,
   DEFAULT_PREFERENCES,
 } from "./types";
 
@@ -44,7 +46,8 @@ export async function getSeenIds(): Promise<Set<string>> {
 export async function addSeenIds(ids: string[]): Promise<void> {
   if (ids.length === 0) return;
   try {
-    await kv.sadd(KEYS.SEEN_IDS, ...ids);
+    // @vercel/kv sadd accepts a single member or array via cast
+    await (kv.sadd as (key: string, ...members: string[]) => Promise<number>)(KEYS.SEEN_IDS, ...ids);
   } catch {
     // non-fatal
   }
@@ -120,5 +123,65 @@ export async function getLastScanRecord(): Promise<ScanRecord | null> {
     return item as ScanRecord;
   } catch {
     return null;
+  }
+}
+
+// ─── Bookmarks ────────────────────────────────────────────────────────────────
+
+const BOOKMARKS_KEY = "hyh:bookmarks";
+
+export async function getBookmarks(): Promise<BookmarkedListing[]> {
+  try {
+    const data = await kv.hgetall(BOOKMARKS_KEY);
+    if (!data) return [];
+    return Object.values(data).map((v) => {
+      if (typeof v === "string") return JSON.parse(v) as BookmarkedListing;
+      return v as BookmarkedListing;
+    });
+  } catch {
+    return [];
+  }
+}
+
+export async function addBookmark(listing: AIScoredListing): Promise<void> {
+  try {
+    const bookmark: BookmarkedListing = {
+      listing,
+      savedAt: new Date().toISOString(),
+      sold: false,
+    };
+    await kv.hset(BOOKMARKS_KEY, { [listing.id]: JSON.stringify(bookmark) });
+  } catch {
+    // non-fatal
+  }
+}
+
+export async function removeBookmark(zpid: string): Promise<void> {
+  try {
+    await kv.hdel(BOOKMARKS_KEY, zpid);
+  } catch {
+    // non-fatal
+  }
+}
+
+export async function markBookmarkSold(zpid: string): Promise<void> {
+  try {
+    const raw = await kv.hget<string>(BOOKMARKS_KEY, zpid);
+    if (!raw) return;
+    const bookmark: BookmarkedListing =
+      typeof raw === "string" ? JSON.parse(raw) : (raw as BookmarkedListing);
+    bookmark.sold = true;
+    await kv.hset(BOOKMARKS_KEY, { [zpid]: JSON.stringify(bookmark) });
+  } catch {
+    // non-fatal
+  }
+}
+
+export async function getBookmarkIds(): Promise<Set<string>> {
+  try {
+    const keys = await kv.hkeys(BOOKMARKS_KEY);
+    return new Set(keys as string[]);
+  } catch {
+    return new Set();
   }
 }

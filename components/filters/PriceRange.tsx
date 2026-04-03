@@ -19,12 +19,7 @@ const MIN = 0;
 const MAX = 2000000;
 const STEP = 25000;
 
-export function PriceRange({
-  minPrice,
-  maxPrice,
-  onMinChange,
-  onMaxChange,
-}: PriceRangeProps) {
+export function PriceRange({ minPrice, maxPrice, onMinChange, onMaxChange }: PriceRangeProps) {
   const [localMin, setLocalMin] = useState(minPrice);
   const [localMax, setLocalMax] = useState(maxPrice);
 
@@ -43,17 +38,42 @@ export function PriceRange({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-zinc-500 uppercase tracking-wide">
+        <span
+          style={{
+            fontSize: 10,
+            fontWeight: 600,
+            letterSpacing: "0.15em",
+            textTransform: "uppercase" as const,
+            color: "#484F58",
+            fontFamily: "var(--font-inter, sans-serif)",
+          }}
+        >
           Price Range
         </span>
-        <span className="text-sm font-semibold text-zinc-100">
+        <span
+          style={{
+            fontSize: 13,
+            fontWeight: 600,
+            color: "#39D353",
+            fontFamily: "var(--font-mono, monospace)",
+          }}
+        >
           {formatPrice(localMin)} — {formatPrice(localMax)}
         </span>
       </div>
 
       <div className="space-y-2">
         <div className="flex items-center gap-2">
-          <span className="text-xs text-zinc-600 w-6">Min</span>
+          <span
+            style={{
+              fontSize: 10,
+              color: "#484F58",
+              width: 24,
+              fontFamily: "var(--font-inter, sans-serif)",
+            }}
+          >
+            min
+          </span>
           <input
             type="range"
             min={MIN}
@@ -61,12 +81,21 @@ export function PriceRange({
             step={STEP}
             value={localMin}
             onChange={(e) => handleMinChange(Number(e.target.value))}
-            className="flex-1"
+            className="custom-slider flex-1"
             aria-label="Minimum price"
           />
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-zinc-600 w-6">Max</span>
+          <span
+            style={{
+              fontSize: 10,
+              color: "#484F58",
+              width: 24,
+              fontFamily: "var(--font-inter, sans-serif)",
+            }}
+          >
+            max
+          </span>
           <input
             type="range"
             min={MIN}
@@ -74,7 +103,7 @@ export function PriceRange({
             step={STEP}
             value={localMax}
             onChange={(e) => handleMaxChange(Number(e.target.value))}
-            className="flex-1"
+            className="custom-slider flex-1"
             aria-label="Maximum price"
           />
         </div>

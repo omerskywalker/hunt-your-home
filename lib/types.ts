@@ -58,6 +58,12 @@ export interface ScanRecord {
   durationMs: number;
 }
 
+export interface BookmarkedListing {
+  listing: AIScoredListing;
+  savedAt: string;
+  sold: boolean;
+}
+
 export const DEFAULT_PREFERENCES: UserPreferences = {
   minBeds: 3,
   minBaths: 2,

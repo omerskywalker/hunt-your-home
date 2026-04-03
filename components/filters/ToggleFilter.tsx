@@ -7,33 +7,56 @@ interface ToggleFilterProps {
   description?: string;
 }
 
-export function ToggleFilter({
-  label,
-  checked,
-  onChange,
-  description,
-}: ToggleFilterProps) {
+export function ToggleFilter({ label, checked, onChange, description }: ToggleFilterProps) {
   return (
     <div className="flex items-center justify-between gap-3">
       <div>
-        <div className="text-sm font-medium text-zinc-300">{label}</div>
+        <div
+          className="text-sm"
+          style={{
+            color: "#E6EDF3",
+            fontFamily: "var(--font-inter, sans-serif)",
+          }}
+        >
+          {label}
+        </div>
         {description && (
-          <div className="text-xs text-zinc-600 mt-0.5">{description}</div>
+          <div
+            className="mt-0.5"
+            style={{
+              fontSize: 11,
+              color: "#484F58",
+              fontFamily: "var(--font-inter, sans-serif)",
+            }}
+          >
+            {description}
+          </div>
         )}
       </div>
+
       <button
         role="switch"
         aria-checked={checked}
         aria-label={label}
         onClick={() => onChange(!checked)}
-        className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900 ${
-          checked ? "bg-brand" : "bg-zinc-700"
-        }`}
+        className="relative inline-flex shrink-0 cursor-pointer rounded-full transition-all duration-200 focus-visible:outline-none"
+        style={{
+          width: 36,
+          height: 20,
+          padding: 2,
+          background: checked ? "#1A7F37" : "#30363D",
+          border: checked ? "1px solid rgba(57,211,83,0.3)" : "1px solid #484F58",
+          boxShadow: checked ? "0 0 8px rgba(57,211,83,0.2)" : "none",
+        }}
       >
         <span
-          className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-lg transform transition duration-200 ${
-            checked ? "translate-x-4" : "translate-x-0"
-          }`}
+          className="inline-block rounded-full shadow transition-all duration-200"
+          style={{
+            width: 14,
+            height: 14,
+            background: checked ? "#39D353" : "#8B949E",
+            transform: checked ? "translateX(16px)" : "translateX(0px)",
+          }}
         />
       </button>
     </div>

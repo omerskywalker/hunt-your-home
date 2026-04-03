@@ -1,50 +1,89 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ExternalLink, Bed, Bath, Maximize2, Calendar } from "lucide-react";
+import { ExternalLink, Bed, Bath, Maximize2, Calendar, Star } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import Image from "next/image";
-import { AlertRecord } from "@/lib/types";
+import { AlertRecord, AIScoredListing } from "@/lib/types";
 
 interface ListingCardProps {
   record: AlertRecord;
   index?: number;
+  isBookmarked?: boolean;
+  onToggleBookmark?: (listing: AIScoredListing) => void;
+  showSoldBanner?: boolean;
 }
 
-function ScoreBadge({ score }: { score: number }) {
-  const color =
-    score >= 8
-      ? "bg-brand/15 text-brand border-brand/30"
-      : score >= 6
-      ? "bg-zinc-700/50 text-zinc-300 border-zinc-600"
-      : "bg-zinc-800/50 text-zinc-500 border-zinc-700";
-
+function ScoreBadge({ score, tier }: { score: number; tier: "HOT" | "MATCH" }) {
+  const isHot = tier === "HOT";
   return (
     <div
-      className={`flex items-center gap-1 px-2 py-0.5 rounded-md border text-xs font-semibold ${color}`}
+      className="flex items-center gap-1 px-2 py-0.5 rounded-md border text-[11px] font-bold min-h-[22px]"
+      style={
+        isHot
+          ? {
+              background: "rgba(57,211,83,0.1)",
+              borderColor: "rgba(57,211,83,0.25)",
+              color: "#39D353",
+            }
+          : {
+              background: "rgba(88,166,255,0.1)",
+              borderColor: "rgba(88,166,255,0.25)",
+              color: "#58A6FF",
+            }
+      }
     >
-      <span className="text-[10px] font-normal opacity-70">AI</span>
-      {score}
-      <span className="text-[10px] font-normal opacity-70">/10</span>
+      <span
+        className="opacity-50 font-normal text-[9px] uppercase tracking-wide"
+        style={{ fontFamily: "var(--font-inter, sans-serif)" }}
+      >
+        AI
+      </span>
+      <span style={{ fontFamily: "var(--font-space-grotesk, sans-serif)", fontSize: 12 }}>
+        {score}/10
+      </span>
     </div>
   );
 }
 
 function TierBadge({ tier }: { tier: "HOT" | "MATCH" }) {
   return tier === "HOT" ? (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-brand/15 text-brand border border-brand/30 text-[11px] font-semibold">
+    <span
+      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider"
+      style={{
+        background: "rgba(255,107,53,0.1)",
+        border: "1px solid rgba(255,107,53,0.2)",
+        color: "#FF6B35",
+        fontFamily: "var(--font-inter, sans-serif)",
+      }}
+    >
       🔥 HOT
     </span>
   ) : (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-zinc-700/40 text-zinc-300 border border-zinc-700 text-[11px] font-semibold">
+    <span
+      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider"
+      style={{
+        background: "rgba(88,166,255,0.1)",
+        border: "1px solid rgba(88,166,255,0.2)",
+        color: "#58A6FF",
+        fontFamily: "var(--font-inter, sans-serif)",
+      }}
+    >
       ✦ MATCH
     </span>
   );
 }
 
-export function ListingCard({ record, index = 0 }: ListingCardProps) {
+export function ListingCard({
+  record,
+  index = 0,
+  isBookmarked = false,
+  onToggleBookmark,
+  showSoldBanner = false,
+}: ListingCardProps) {
   const { listing, sentAt } = record;
   const photoUrl = listing.photos?.[0];
+  const shortAddress = listing.address.replace(/,\s*Frisco,?\s*TX\s*\d*/i, "").trim();
   const timeAgo = formatDistanceToNow(new Date(sentAt), { addSuffix: true });
   const pricePerSqft =
     listing.pricePerSqft ??
@@ -52,78 +91,189 @@ export function ListingCard({ record, index = 0 }: ListingCardProps) {
 
   return (
     <motion.article
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: index * 0.05 }}
-      className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden hover:border-zinc-700 transition-colors group"
+      transition={{ duration: 0.25, delay: index * 0.07 }}
+      className="rounded-xl overflow-hidden group"
+      style={{
+        background: "#161B22",
+        border: "1px solid #21262D",
+        transition: "border-color 200ms ease, box-shadow 200ms ease, transform 200ms ease",
+        opacity: showSoldBanner ? 0.85 : 1,
+      }}
+      onMouseEnter={(e) => {
+        const el = e.currentTarget as HTMLElement;
+        el.style.borderColor = "#30363D";
+        el.style.transform = "translateY(-1px)";
+        el.style.boxShadow = "0 4px 24px rgba(0,0,0,0.4)";
+      }}
+      onMouseLeave={(e) => {
+        const el = e.currentTarget as HTMLElement;
+        el.style.borderColor = "#21262D";
+        el.style.transform = "translateY(0)";
+        el.style.boxShadow = "none";
+      }}
       aria-label={`Listing: ${listing.address}`}
     >
       {/* Photo */}
-      <div className="relative h-40 bg-zinc-800 overflow-hidden">
+      <div
+        className="relative h-40 overflow-hidden"
+        style={{ background: "#1C2430" }}
+      >
         {photoUrl ? (
           <Image
             src={photoUrl}
             alt={listing.address}
             fill
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
             sizes="(max-width: 768px) 100vw, 600px"
             unoptimized
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-12 h-12 rounded-xl bg-zinc-700 flex items-center justify-center">
-              <span className="text-zinc-500 text-xl">🏠</span>
+            <div
+              className="w-10 h-10 rounded-lg flex items-center justify-center"
+              style={{ background: "#21262D" }}
+            >
+              <span className="text-lg">🏠</span>
             </div>
           </div>
         )}
-        {/* Overlay badges */}
-        <div className="absolute top-2 left-2 flex items-center gap-1.5">
+        {/* Bottom gradient */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(to top, rgba(22,27,34,0.7) 0%, transparent 50%)",
+          }}
+        />
+
+        {/* SOLD banner */}
+        {showSoldBanner && (
+          <div
+            className="absolute inset-0 flex items-center justify-center"
+            style={{ background: "rgba(180,28,28,0.82)", zIndex: 10 }}
+          >
+            <span
+              className="font-black tracking-widest text-white text-xl"
+              style={{ fontFamily: "var(--font-space-grotesk, sans-serif)", letterSpacing: "0.12em" }}
+            >
+              HOME SOLD
+            </span>
+          </div>
+        )}
+
+        <div className="absolute top-2 left-2" style={{ zIndex: 5 }}>
           <TierBadge tier={listing.alertTier} />
         </div>
-        <div className="absolute top-2 right-2">
-          <ScoreBadge score={listing.aiScore} />
+        <div className="absolute top-2 right-2" style={{ zIndex: 5 }}>
+          <ScoreBadge score={listing.aiScore} tier={listing.alertTier} />
         </div>
+
+        {/* Bookmark star */}
+        {onToggleBookmark && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleBookmark(listing);
+            }}
+            className="absolute bottom-2 right-2"
+            style={{ zIndex: 5 }}
+            aria-label={isBookmarked ? "Remove bookmark" : "Save home"}
+          >
+            <motion.div
+              whileTap={{ scale: 0.85 }}
+              className="w-7 h-7 rounded-full flex items-center justify-center"
+              style={{
+                background: isBookmarked
+                  ? "rgba(57,211,83,0.2)"
+                  : "rgba(13,17,23,0.7)",
+                border: isBookmarked
+                  ? "1px solid rgba(57,211,83,0.4)"
+                  : "1px solid rgba(255,255,255,0.1)",
+                backdropFilter: "blur(4px)",
+                transition: "background 200ms ease, border-color 200ms ease",
+              }}
+            >
+              <Star
+                size={13}
+                fill={isBookmarked ? "#39D353" : "none"}
+                stroke={isBookmarked ? "#39D353" : "#8B949E"}
+                strokeWidth={2}
+              />
+            </motion.div>
+          </button>
+        )}
       </div>
 
       {/* Content */}
       <div className="p-4">
         {/* Address & Price */}
-        <div className="flex items-start justify-between gap-2 mb-2">
-          <h3 className="text-zinc-100 font-semibold text-sm leading-snug line-clamp-2 flex-1">
-            {listing.address}
+        <div className="flex items-start justify-between gap-2 mb-2.5">
+          <h3
+            className="text-sm font-medium truncate flex-1"
+            style={{
+              color: "#E6EDF3",
+              fontFamily: "var(--font-space-grotesk, sans-serif)",
+            }}
+          >
+            {shortAddress}
           </h3>
           <div className="shrink-0 text-right">
-            <div className="text-brand font-bold text-base">
+            <div
+              className="font-black text-2xl"
+              style={{
+                color: "#E6EDF3",
+                fontFamily: "var(--font-price, var(--font-space-grotesk), sans-serif)",
+                letterSpacing: "-0.02em",
+              }}
+            >
               ${listing.price.toLocaleString()}
             </div>
             {pricePerSqft && (
-              <div className="text-zinc-500 text-xs">${pricePerSqft}/sqft</div>
+              <div
+                className="text-xs"
+                style={{
+                  color: "#8B949E",
+                  fontFamily: "var(--font-inter, sans-serif)",
+                }}
+              >
+                ${pricePerSqft}/sqft
+              </div>
             )}
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="flex items-center gap-3 text-xs text-zinc-400 mb-3">
-          <span className="flex items-center gap-1">
-            <Bed size={12} className="text-zinc-600" />
+        {/* Stats row */}
+        <div
+          className="flex items-center text-xs mb-2.5"
+          style={{ fontFamily: "var(--font-inter, sans-serif)" }}
+        >
+          <span className="flex items-center gap-1 text-content-secondary">
+            <Bed size={12} className="text-content-muted w-3 h-3" />
             {listing.beds} bd
           </span>
-          <span className="flex items-center gap-1">
-            <Bath size={12} className="text-zinc-600" />
+          <span className="text-content-muted mx-0.5 select-none" aria-hidden="true">·</span>
+          <span className="flex items-center gap-1 text-content-secondary">
+            <Bath size={12} className="text-content-muted w-3 h-3" />
             {listing.baths} ba
           </span>
-          <span className="flex items-center gap-1">
-            <Maximize2 size={12} className="text-zinc-600" />
+          <span className="text-content-muted mx-0.5 select-none" aria-hidden="true">·</span>
+          <span className="flex items-center gap-1 text-content-secondary">
+            <Maximize2 size={12} className="text-content-muted w-3 h-3" />
             {listing.sqft.toLocaleString()} sqft
           </span>
-          <span className="flex items-center gap-1">
-            <Calendar size={12} className="text-zinc-600" />
+          <span className="text-content-muted mx-0.5 select-none" aria-hidden="true">·</span>
+          <span className="flex items-center gap-1 text-content-secondary">
+            <Calendar size={12} className="text-content-muted w-3 h-3" />
             {listing.yearBuilt}
           </span>
         </div>
 
         {/* AI Reason */}
-        <p className="text-zinc-500 text-xs leading-relaxed line-clamp-2 mb-3">
+        <p
+          className="text-xs leading-relaxed line-clamp-2 mb-3"
+          style={{ color: "#8B949E", fontFamily: "var(--font-inter, sans-serif)" }}
+        >
           {listing.aiReason}
         </p>
 
@@ -133,7 +283,14 @@ export function ListingCard({ record, index = 0 }: ListingCardProps) {
             {listing.aiHighlights.slice(0, 3).map((h, i) => (
               <span
                 key={i}
-                className="text-[10px] px-1.5 py-0.5 bg-green-950/40 text-green-400 border border-green-900/50 rounded"
+                className="text-[10px] px-1.5 py-0.5 rounded-md"
+                style={{
+                  background: "rgba(57,211,83,0.06)",
+                  border: "1px solid rgba(57,211,83,0.15)",
+                  color: "#39D353",
+                  fontFamily: "var(--font-inter, sans-serif)",
+                  opacity: 0.85,
+                }}
               >
                 {h}
               </span>
@@ -142,17 +299,28 @@ export function ListingCard({ record, index = 0 }: ListingCardProps) {
         )}
 
         {/* Footer */}
-        <div className="flex items-center justify-between pt-2 border-t border-zinc-800">
-          <span className="text-[11px] text-zinc-600">{timeAgo}</span>
+        <div
+          className="flex items-center justify-between pt-2.5"
+          style={{ borderTop: "1px solid #21262D" }}
+        >
+          <span
+            className="text-[11px]"
+            style={{ color: "#484F58", fontFamily: "var(--font-inter, sans-serif)" }}
+          >
+            {timeAgo}
+          </span>
           <a
             href={listing.zillowUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1 text-xs text-brand hover:text-brand-light font-medium transition-colors"
+            className="flex items-center gap-1 text-xs font-medium transition-colors duration-150 underline-offset-2 hover:underline"
+            style={{ color: "#006AFF", fontFamily: "var(--font-inter, sans-serif)" }}
+            onMouseEnter={(e) => ((e.currentTarget as HTMLAnchorElement).style.color = "#0041D9")}
+            onMouseLeave={(e) => ((e.currentTarget as HTMLAnchorElement).style.color = "#006AFF")}
             aria-label={`View ${listing.address} on Zillow`}
           >
             View on Zillow
-            <ExternalLink size={11} />
+            <ExternalLink size={10} />
           </a>
         </div>
       </div>
