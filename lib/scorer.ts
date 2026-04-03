@@ -1,7 +1,7 @@
-import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
 import { ZillowListing, AIScoredListing, UserPreferences } from "./types";
 
-const client = new Anthropic();
+const client = new OpenAI();
 
 interface ScoreResult {
   score: number;
@@ -35,27 +35,18 @@ async function scoreListingOnce(
   listing: ZillowListing,
   prefs: UserPreferences
 ): Promise<ScoreResult> {
-  const message = await client.messages.create({
-    model: "claude-sonnet-4-6",
+  const response = await client.chat.completions.create({
+    model: "gpt-4o-mini",
     max_tokens: 500,
-    system: SYSTEM_PROMPT,
+    response_format: { type: "json_object" },
     messages: [
-      {
-        role: "user",
-        content: buildListingPrompt(listing, prefs),
-      },
+      { role: "system", content: SYSTEM_PROMPT },
+      { role: "user", content: buildListingPrompt(listing, prefs) },
     ],
   });
 
-  const content = message.content[0];
-  if (content.type !== "text") throw new Error("Unexpected response type");
-
-  const text = content.text.trim();
-  // Extract JSON — handle markdown code fences if present
-  const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/) ?? null;
-  const jsonText = jsonMatch ? jsonMatch[1] : text;
-
-  return JSON.parse(jsonText) as ScoreResult;
+  const text = response.choices[0]?.message?.content?.trim() ?? "";
+  return JSON.parse(text) as ScoreResult;
 }
 
 export async function scoreListing(

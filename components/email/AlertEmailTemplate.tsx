@@ -84,7 +84,7 @@ export function AlertEmailTemplate({ listing, tier }: AlertEmailTemplateProps) {
           {/* Address & Price */}
           <Section style={styles.addressSection}>
             <Heading style={styles.address}>{listing.address}</Heading>
-            <Text style={styles.price}>
+            <Text style={{ ...styles.price, color: isHot ? "#39D353" : "#E6EDF3" }}>
               ${listing.price.toLocaleString()}
             </Text>
           </Section>
@@ -276,11 +276,12 @@ const styles: Record<string, React.CSSProperties> = {
     lineHeight: "1.3",
   },
   price: {
-    color: "#f97316",
-    fontSize: "28px",
-    fontWeight: "700",
+    color: "#E6EDF3",
+    fontSize: "32px",
+    fontWeight: "900",
+    fontFamily: "'Object Sans', 'Space Grotesk', Inter, sans-serif",
     margin: 0,
-    letterSpacing: "-0.5px",
+    letterSpacing: "-0.03em",
   },
   divider: {
     borderColor: "#27272a",
@@ -386,7 +387,7 @@ const styles: Record<string, React.CSSProperties> = {
     textAlign: "center" as const,
   },
   ctaButton: {
-    backgroundColor: "#f97316",
+    backgroundColor: "#006AFF",
     color: "#ffffff",
     padding: "14px 40px",
     borderRadius: "8px",

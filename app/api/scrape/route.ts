@@ -10,6 +10,8 @@ import {
   addSeenIds,
   pushAlertRecord,
   pushScanRecord,
+  getBookmarkIds,
+  markBookmarkSold,
 } from "@/lib/storage";
 import { AlertRecord, ScanRecord } from "@/lib/types";
 
@@ -50,15 +52,28 @@ export async function POST(request: NextRequest) {
     const allListings = await runZillowScraper(prefs.searchArea);
     listingsFound = allListings.length;
 
-    // 3. Deduplicate
+    // 3. Check bookmarked listings for sold status
+    const bookmarkIds = await getBookmarkIds();
+    if (bookmarkIds.size > 0) {
+      const activeForSaleIds = new Set(
+        allListings.filter((l) => l.listingType === "FOR_SALE").map((l) => l.id)
+      );
+      for (const zpid of bookmarkIds) {
+        if (!activeForSaleIds.has(zpid)) {
+          await markBookmarkSold(zpid);
+        }
+      }
+    }
+
+    // 4. Deduplicate
     const seenIds = await getSeenIds();
     const unseen = allListings.filter((l) => !seenIds.has(l.id));
     newListings = unseen.length;
 
-    // 4. Hard filters (FOR_SALE, price, beds, baths, sqft, yearBuilt, hoa)
+    // 5. Hard filters (FOR_SALE, price, beds, baths, sqft, yearBuilt, hoa)
     const filtered = unseen.filter((l) => matchesHardFilters(l, prefs));
 
-    // 5. Mark ALL new listings as seen (even unmatched)
+    // 6. Mark ALL new listings as seen (even unmatched)
     if (unseen.length > 0) {
       await addSeenIds(unseen.map((l) => l.id));
     }

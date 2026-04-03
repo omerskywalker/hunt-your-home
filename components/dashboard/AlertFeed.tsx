@@ -1,48 +1,66 @@
 "use client";
 
-import { Bell } from "lucide-react";
-import { AlertRecord } from "@/lib/types";
+import { AlertRecord, AIScoredListing } from "@/lib/types";
 import { ListingCard } from "./ListingCard";
 import { EmptyState } from "./EmptyState";
 
 interface AlertFeedProps {
   alerts: AlertRecord[];
   loading?: boolean;
+  bookmarkedZpids?: Set<string>;
+  onToggleBookmark?: (listing: AIScoredListing) => void;
 }
 
 function SkeletonCard() {
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden animate-pulse">
-      <div className="h-40 bg-zinc-800" />
+    <div
+      className="rounded-xl overflow-hidden animate-pulse"
+      style={{ background: "#161B22", border: "1px solid #21262D" }}
+    >
+      <div className="h-40" style={{ background: "#1C2430" }} />
       <div className="p-4 space-y-3">
-        <div className="flex justify-between">
-          <div className="h-4 bg-zinc-800 rounded w-3/4" />
-          <div className="h-4 bg-zinc-800 rounded w-1/5" />
+        <div className="flex justify-between gap-2">
+          <div className="h-3.5 rounded w-3/4" style={{ background: "#1C2430" }} />
+          <div className="h-3.5 rounded w-1/5" style={{ background: "#1C2430" }} />
         </div>
         <div className="flex gap-3">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-3 bg-zinc-800 rounded w-12" />
+            <div key={i} className="h-2.5 rounded w-10" style={{ background: "#1C2430" }} />
           ))}
         </div>
-        <div className="h-3 bg-zinc-800 rounded w-full" />
-        <div className="h-3 bg-zinc-800 rounded w-4/5" />
+        <div className="h-2.5 rounded w-full" style={{ background: "#1C2430" }} />
+        <div className="h-2.5 rounded w-4/5" style={{ background: "#1C2430" }} />
       </div>
     </div>
   );
 }
 
-export function AlertFeed({ alerts, loading }: AlertFeedProps) {
+export function AlertFeed({ alerts, loading, bookmarkedZpids, onToggleBookmark }: AlertFeedProps) {
   return (
     <section aria-label="Alert history">
-      {/* Title */}
-      <div className="flex items-center gap-2 mb-4">
-        <Bell size={16} className="text-zinc-500" />
-        <h2 className="text-zinc-100 font-semibold">Alert History</h2>
-        {alerts.length > 0 && (
-          <span className="ml-1 px-1.5 py-0.5 rounded-full bg-zinc-800 text-zinc-400 text-[11px] font-medium">
-            {alerts.length}
-          </span>
-        )}
+      {/* Section heading */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-2">
+          <div
+            className="w-1 h-5 rounded-full"
+            style={{ background: "#39D353" }}
+          />
+          <h2
+            className="font-semibold text-base"
+            style={{
+              color: "#E6EDF3",
+              fontFamily: "var(--font-space-grotesk, sans-serif)",
+            }}
+          >
+            Alert History
+          </h2>
+        </div>
+        <span
+          className="text-xs"
+          style={{ color: "#484F58", fontFamily: "var(--font-inter, sans-serif)" }}
+        >
+          {alerts.length} total
+        </span>
       </div>
 
       {/* Content */}
@@ -55,9 +73,15 @@ export function AlertFeed({ alerts, loading }: AlertFeedProps) {
       ) : alerts.length === 0 ? (
         <EmptyState />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="alert-grid grid grid-cols-1 sm:grid-cols-2 gap-4">
           {alerts.map((record, i) => (
-            <ListingCard key={record.id} record={record} index={i} />
+            <ListingCard
+              key={record.id}
+              record={record}
+              index={i}
+              isBookmarked={bookmarkedZpids?.has(record.listing.id)}
+              onToggleBookmark={onToggleBookmark}
+            />
           ))}
         </div>
       )}

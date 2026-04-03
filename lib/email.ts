@@ -2,7 +2,11 @@ import { Resend } from "resend";
 import { AIScoredListing } from "./types";
 import { AlertEmailTemplate } from "@/components/email/AlertEmailTemplate";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+function getResend(): Resend {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) throw new Error("RESEND_API_KEY is not set");
+  return new Resend(key);
+}
 
 const FROM = process.env.ALERT_EMAIL_FROM ?? "HuntYourHome <alerts@huntyourhome.app>";
 
@@ -11,6 +15,7 @@ export async function sendHotAlert(
   to: string
 ): Promise<boolean> {
   try {
+    const resend = getResend();
     const { error } = await resend.emails.send({
       from: FROM,
       to,
@@ -36,6 +41,7 @@ export async function sendMatchDigest(
 
   try {
     // Send individual emails for each MATCH listing
+    const resend = getResend();
     const results = await Promise.all(
       listings.map((listing) =>
         resend.emails.send({
