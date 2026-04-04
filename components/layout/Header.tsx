@@ -17,7 +17,7 @@ export function Header({ onMenuClick }: HeaderProps) {
         className="p-2 rounded-md transition-colors"
         style={{ color: "#8B949E" }}
         onMouseEnter={(e) => {
-          (e.currentTarget as HTMLButtonElement).style.background = "#1C2430";
+          (e.currentTarget as HTMLButtonElement).style.background = "#1A2B1C";
           (e.currentTarget as HTMLButtonElement).style.color = "#E6EDF3";
         }}
         onMouseLeave={(e) => {
@@ -42,7 +42,7 @@ export function Header({ onMenuClick }: HeaderProps) {
         className="p-2 rounded-md transition-colors"
         style={{ color: "#8B949E" }}
         onMouseEnter={(e) => {
-          (e.currentTarget as HTMLButtonElement).style.background = "#1C2430";
+          (e.currentTarget as HTMLButtonElement).style.background = "#1A2B1C";
           (e.currentTarget as HTMLButtonElement).style.color = "#E6EDF3";
         }}
         onMouseLeave={(e) => {

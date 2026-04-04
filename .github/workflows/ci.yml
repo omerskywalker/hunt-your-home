@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  ci:
+    name: Type-check · Test · Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Type-check
+        run: pnpm tsc --noEmit
+
+      - name: Run tests
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+        env:
+          # Stub required env vars so the build doesn't fail without real secrets
+          NEXT_PUBLIC_APP_URL: https://example.com
+          KV_REST_API_URL: https://example.upstash.io
+          KV_REST_API_TOKEN: stub
+          OPENAI_API_KEY: stub
+          RESEND_API_KEY: stub
+          APIFY_API_TOKEN: stub
+          CRON_SECRET: stub

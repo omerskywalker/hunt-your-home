@@ -19,7 +19,7 @@ export function Sidebar() {
   return (
     <aside
       className="hidden lg:flex flex-col w-[220px] min-h-screen fixed left-0 top-0 z-30"
-      style={{ background: "#0D1117", borderRight: "1px solid #21262D" }}
+      style={{ background: "#0D1510", borderRight: "1px solid #21262D" }}
     >
       {/* Logo */}
       <div
@@ -32,7 +32,7 @@ export function Sidebar() {
         >
           <span
             className="text-xs font-bold"
-            style={{ color: "#080C10", fontFamily: "var(--font-space-grotesk, sans-serif)" }}
+            style={{ color: "#080E0A", fontFamily: "var(--font-space-grotesk, sans-serif)" }}
           >
             H
           </span>
@@ -108,7 +108,7 @@ export function Sidebar() {
       <div className="px-4 py-5">
         <div
           className="inline-flex items-center gap-2 rounded-full px-3 py-1"
-          style={{ background: "#161B22" }}
+          style={{ background: "#141C16" }}
         >
           <span
             className="w-1.5 h-1.5 rounded-full animate-pulse"

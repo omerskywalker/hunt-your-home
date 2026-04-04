@@ -23,12 +23,12 @@ export function EmptyState() {
         animate={{ scale: 1 }}
         transition={{ delay: 0.08, duration: 0.25 }}
         className="max-w-sm w-full mx-auto rounded-xl overflow-hidden text-left"
-        style={{ background: "#0D1117", border: "1px solid #21262D" }}
+        style={{ background: "#0D1510", border: "1px solid #21262D" }}
       >
         {/* macOS title bar */}
         <div
           className="flex items-center gap-1.5 px-4 py-2.5"
-          style={{ background: "#161B22", borderBottom: "1px solid #21262D" }}
+          style={{ background: "#141C16", borderBottom: "1px solid #21262D" }}
         >
           <span className="w-3 h-3 rounded-full" style={{ background: "#FF5F57" }} />
           <span className="w-3 h-3 rounded-full" style={{ background: "#FEBC2E" }} />
