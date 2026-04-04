@@ -7,9 +7,9 @@ export const contentType = "image/png";
 
 export default async function Image() {
   const [interRegular, interBold, spaceGroteskBold, houseImg] = await Promise.all([
-    fetch("https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.8/files/inter-latin-400-normal.woff2").then((r) => r.arrayBuffer()),
-    fetch("https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.8/files/inter-latin-700-normal.woff2").then((r) => r.arrayBuffer()),
-    fetch("https://cdn.jsdelivr.net/npm/@fontsource/space-grotesk@5.0.8/files/space-grotesk-latin-700-normal.woff2").then((r) => r.arrayBuffer()),
+    fetch("https://cdn.jsdelivr.net/npm/@fontsource/inter@4.5.15/files/inter-latin-400-normal.woff").then((r) => r.arrayBuffer()),
+    fetch("https://cdn.jsdelivr.net/npm/@fontsource/inter@4.5.15/files/inter-latin-700-normal.woff").then((r) => r.arrayBuffer()),
+    fetch("https://cdn.jsdelivr.net/npm/@fontsource/space-grotesk@4.5.0/files/space-grotesk-latin-700-normal.woff").then((r) => r.arrayBuffer()),
     fetch("https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=600&q=80").then((r) => r.arrayBuffer()),
   ]);
 
