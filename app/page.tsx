@@ -207,13 +207,13 @@ export default function HomePage() {
           {loadingPrefs ? (
             <div
               className="rounded-xl p-5 space-y-4 animate-pulse"
-              style={{ background: "#161B22", border: "1px solid #21262D" }}
+              style={{ background: "#141C16", border: "1px solid #21262D" }}
             >
-              <div className="h-4 rounded w-1/2" style={{ background: "#1C2430" }} />
-              <div className="h-3 rounded w-3/4" style={{ background: "#1C2430" }} />
+              <div className="h-4 rounded w-1/2" style={{ background: "#1A2B1C" }} />
+              <div className="h-3 rounded w-3/4" style={{ background: "#1A2B1C" }} />
               <div className="space-y-2">
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="h-8 rounded" style={{ background: "#1C2430" }} />
+                  <div key={i} className="h-8 rounded" style={{ background: "#1A2B1C" }} />
                 ))}
               </div>
             </div>

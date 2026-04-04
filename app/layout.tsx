@@ -58,7 +58,7 @@ export default function RootLayout({
     >
       <body
         className="min-h-full antialiased"
-        style={{ background: "#080C10", color: "#E6EDF3", fontFamily: "var(--font-inter, Inter, sans-serif)" }}
+        style={{ background: "#080E0A", color: "#E6EDF3", fontFamily: "var(--font-inter, Inter, sans-serif)" }}
       >
         {GA_ID && (
           <>
@@ -101,7 +101,7 @@ export default function RootLayout({
           position="bottom-right"
           toastOptions={{
             style: {
-              background: "#161B22",
+              background: "#141C16",
               border: "1px solid #21262D",
               color: "#E6EDF3",
               fontFamily: "var(--font-inter, Inter, sans-serif)",

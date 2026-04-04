@@ -6,10 +6,10 @@
 
 /* ─── Design tokens ─────────────────────────────────────── */
 @theme {
-  --color-bg-base:     #080C10;
-  --color-bg-surface:  #0D1117;
-  --color-bg-elevated: #161B22;
-  --color-bg-hover:    #1C2430;
+  --color-bg-base:     #080E0A;
+  --color-bg-surface:  #0D1510;
+  --color-bg-elevated: #141C16;
+  --color-bg-hover:    #1A2B1C;
 
   --color-border-subtle: #21262D;
   --color-border-strong: #30363D;
@@ -39,7 +39,11 @@ body {
   font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: #080C10;
+  background: #080E0A;
+  /* Ambient glow: ties the lime green accent into the base background */
+  background-image:
+    radial-gradient(ellipse 70% 50% at -5% -5%, rgba(57, 211, 83, 0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 100% 100%, rgba(57, 211, 83, 0.03) 0%, transparent 50%);
   color: #E6EDF3;
 }
 
@@ -212,11 +216,11 @@ input[type="range"] {
 }
 
 :root {
-  --background: #080C10;
+  --background: #080E0A;
   --foreground: #E6EDF3;
-  --card: #161B22;
+  --card: #141C16;
   --card-foreground: #E6EDF3;
-  --popover: #161B22;
+  --popover: #141C16;
   --popover-foreground: #E6EDF3;
   --primary: #39D353;
   --primary-foreground: #080C10;
@@ -231,7 +235,7 @@ input[type="range"] {
   --input: #21262D;
   --ring: #39D353;
   --radius: 0.625rem;
-  --sidebar: #0D1117;
+  --sidebar: #0D1510;
   --sidebar-foreground: #E6EDF3;
   --sidebar-primary: #39D353;
   --sidebar-primary-foreground: #080C10;

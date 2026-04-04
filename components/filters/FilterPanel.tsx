@@ -42,7 +42,7 @@ const SECTION_LABEL: React.CSSProperties = {
 
 const INPUT: React.CSSProperties = {
   width: "100%",
-  background: "#0D1117",
+  background: "#0D1510",
   border: "1px solid #21262D",
   borderRadius: 8,
   padding: "8px 12px",
@@ -119,7 +119,7 @@ export function FilterPanel({ initialPrefs, onPrefsChange }: FilterPanelProps) {
     <aside
       className="rounded-xl custom-scrollbar"
       style={{
-        background: "#161B22",
+        background: "#141C16",
         border: "1px solid #21262D",
         padding: 20,
         maxHeight: "calc(100vh - 120px)",
@@ -193,7 +193,7 @@ export function FilterPanel({ initialPrefs, onPrefsChange }: FilterPanelProps) {
         <div className="flex items-center gap-2">
           <button
             onClick={() => updatePrefs({ minSqft: Math.max(0, prefs.minSqft - 100) })}
-            style={{ width: 32, height: 32, background: "#1C2430", border: "1px solid #21262D", borderRadius: 8, color: "#8B949E", fontSize: 16, cursor: "pointer", transition: "border-color 150ms" }}
+            style={{ width: 32, height: 32, background: "#1A2B1C", border: "1px solid #21262D", borderRadius: 8, color: "#8B949E", fontSize: 16, cursor: "pointer", transition: "border-color 150ms" }}
             onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.borderColor = "#30363D")}
             onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.borderColor = "#21262D")}
             aria-label="Decrease min sqft"
@@ -211,7 +211,7 @@ export function FilterPanel({ initialPrefs, onPrefsChange }: FilterPanelProps) {
           />
           <button
             onClick={() => updatePrefs({ minSqft: prefs.minSqft + 100 })}
-            style={{ width: 32, height: 32, background: "#1C2430", border: "1px solid #21262D", borderRadius: 8, color: "#8B949E", fontSize: 16, cursor: "pointer", transition: "border-color 150ms" }}
+            style={{ width: 32, height: 32, background: "#1A2B1C", border: "1px solid #21262D", borderRadius: 8, color: "#8B949E", fontSize: 16, cursor: "pointer", transition: "border-color 150ms" }}
             onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.borderColor = "#30363D")}
             onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.borderColor = "#21262D")}
             aria-label="Increase min sqft"

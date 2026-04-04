@@ -9,7 +9,7 @@ export default function LoginPage({
     <div
       style={{
         minHeight: "100dvh",
-        background: "#080C10",
+        background: "#080E0A",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -22,7 +22,7 @@ export default function LoginPage({
         style={{
           width: "100%",
           maxWidth: 360,
-          background: "#161B22",
+          background: "#141C16",
           border: "1px solid #21262D",
           borderTop: "2px solid #39D353",
           borderRadius: 16,
@@ -42,7 +42,7 @@ export default function LoginPage({
               justifyContent: "center",
               fontSize: 18,
               fontWeight: 800,
-              color: "#080C10",
+              color: "#080E0A",
               fontFamily: "var(--font-space-grotesk, sans-serif)",
               flexShrink: 0,
             }}
@@ -92,7 +92,7 @@ function PinForm() {
           required
           style={{
             width: "100%",
-            background: "#0D1117",
+            background: "#0D1510",
             border: "1px solid #21262D",
             borderRadius: 8,
             padding: "11px 14px",
@@ -110,7 +110,7 @@ function PinForm() {
         style={{
           width: "100%",
           background: "#39D353",
-          color: "#080C10",
+          color: "#080E0A",
           border: "none",
           borderRadius: 8,
           padding: "11px 0",

@@ -129,7 +129,7 @@ function ItemRow({
     <div
       style={{
         padding: "12px 0",
-        borderBottom: "1px solid #161B22",
+        borderBottom: "1px solid #141C16",
         display: "flex",
         flexDirection: "column",
         gap: 6,
@@ -220,7 +220,7 @@ function ItemRow({
             style={{
               fontSize: 10,
               color: "#484F58",
-              background: "#161B22",
+              background: "#141C16",
               border: "1px solid #21262D",
               borderRadius: 4,
               padding: "2px 6px",
@@ -245,7 +245,7 @@ export default async function RoadmapMonitorPage() {
     <div
       style={{
         minHeight: "100dvh",
-        background: "#080C10",
+        background: "#080E0A",
         color: "#E6EDF3",
         fontFamily: "var(--font-inter, sans-serif)",
         paddingBottom: 48,
@@ -254,7 +254,7 @@ export default async function RoadmapMonitorPage() {
       {/* Header */}
       <div
         style={{
-          background: "#0D1117",
+          background: "#0D1510",
           borderBottom: "1px solid #21262D",
           padding: "16px 16px 14px",
           position: "sticky",
@@ -293,7 +293,7 @@ export default async function RoadmapMonitorPage() {
               key={batch.number}
               style={{
                 marginTop: 24,
-                background: "#161B22",
+                background: "#141C16",
                 border: "1px solid #21262D",
                 borderRadius: 12,
                 overflow: "hidden",
@@ -304,7 +304,7 @@ export default async function RoadmapMonitorPage() {
                 style={{
                   padding: "14px 16px 12px",
                   borderBottom: "1px solid #21262D",
-                  background: "#0D1117",
+                  background: "#0D1510",
                 }}
               >
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>

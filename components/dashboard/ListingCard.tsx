@@ -96,7 +96,7 @@ export function ListingCard({
       transition={{ duration: 0.25, delay: index * 0.07 }}
       className="rounded-xl overflow-hidden group"
       style={{
-        background: "#161B22",
+        background: "#141C16",
         border: "1px solid #21262D",
         transition: "border-color 200ms ease, box-shadow 200ms ease, transform 200ms ease",
         opacity: showSoldBanner ? 0.85 : 1,
@@ -118,7 +118,7 @@ export function ListingCard({
       {/* Photo */}
       <div
         className="relative h-40 overflow-hidden"
-        style={{ background: "#1C2430" }}
+        style={{ background: "#1A2B1C" }}
       >
         {photoUrl ? (
           <Image

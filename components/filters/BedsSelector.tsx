@@ -49,12 +49,12 @@ export function BedsSelector({ label, value, onChange, options }: BedsSelectorPr
                 ...(selected
                   ? {
                       background: "#39D353",
-                      color: "#080C10",
+                      color: "#080E0A",
                       fontWeight: 600,
                       border: "1px solid #39D353",
                     }
                   : {
-                      background: "#1C2430",
+                      background: "#1A2B1C",
                       color: "#8B949E",
                       fontWeight: 400,
                       border: "1px solid #21262D",

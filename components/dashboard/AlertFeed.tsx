@@ -15,21 +15,21 @@ function SkeletonCard() {
   return (
     <div
       className="rounded-xl overflow-hidden animate-pulse"
-      style={{ background: "#161B22", border: "1px solid #21262D" }}
+      style={{ background: "#141C16", border: "1px solid #21262D" }}
     >
-      <div className="h-40" style={{ background: "#1C2430" }} />
+      <div className="h-40" style={{ background: "#1A2B1C" }} />
       <div className="p-4 space-y-3">
         <div className="flex justify-between gap-2">
-          <div className="h-3.5 rounded w-3/4" style={{ background: "#1C2430" }} />
-          <div className="h-3.5 rounded w-1/5" style={{ background: "#1C2430" }} />
+          <div className="h-3.5 rounded w-3/4" style={{ background: "#1A2B1C" }} />
+          <div className="h-3.5 rounded w-1/5" style={{ background: "#1A2B1C" }} />
         </div>
         <div className="flex gap-3">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-2.5 rounded w-10" style={{ background: "#1C2430" }} />
+            <div key={i} className="h-2.5 rounded w-10" style={{ background: "#1A2B1C" }} />
           ))}
         </div>
-        <div className="h-2.5 rounded w-full" style={{ background: "#1C2430" }} />
-        <div className="h-2.5 rounded w-4/5" style={{ background: "#1C2430" }} />
+        <div className="h-2.5 rounded w-full" style={{ background: "#1A2B1C" }} />
+        <div className="h-2.5 rounded w-4/5" style={{ background: "#1A2B1C" }} />
       </div>
     </div>
   );

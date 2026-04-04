@@ -29,19 +29,19 @@ function SkeletonCard() {
   return (
     <div
       className="rounded-xl overflow-hidden animate-pulse"
-      style={{ background: "#161B22", border: "1px solid #21262D" }}
+      style={{ background: "#141C16", border: "1px solid #21262D" }}
     >
-      <div className="h-40" style={{ background: "#1C2430" }} />
+      <div className="h-40" style={{ background: "#1A2B1C" }} />
       <div className="p-4 space-y-3">
         <div className="flex justify-between gap-2">
-          <div className="h-3.5 rounded w-3/4" style={{ background: "#1C2430" }} />
-          <div className="h-3.5 rounded w-1/5" style={{ background: "#1C2430" }} />
+          <div className="h-3.5 rounded w-3/4" style={{ background: "#1A2B1C" }} />
+          <div className="h-3.5 rounded w-1/5" style={{ background: "#1A2B1C" }} />
         </div>
         {[1, 2, 3].map((i) => (
           <div
             key={i}
             className="h-2.5 rounded"
-            style={{ background: "#1C2430", width: `${[100, 80, 60][i - 1]}%` }}
+            style={{ background: "#1A2B1C", width: `${[100, 80, 60][i - 1]}%` }}
           />
         ))}
       </div>
@@ -145,7 +145,7 @@ export default function BookmarksPage() {
       {/* Page header */}
       <div
         className="-mx-6 -mt-6 px-6 py-4 mb-6 flex items-center justify-between"
-        style={{ background: "#0D1117", borderBottom: "1px solid #21262D" }}
+        style={{ background: "#0D1510", borderBottom: "1px solid #21262D" }}
       >
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
@@ -164,7 +164,7 @@ export default function BookmarksPage() {
             <span
               className="px-2 py-0.5 rounded-full text-xs font-medium"
               style={{
-                background: "#161B22",
+                background: "#141C16",
                 border: "1px solid #21262D",
                 color: "#8B949E",
                 fontFamily: "var(--font-inter, sans-serif)",

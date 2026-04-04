@@ -34,7 +34,7 @@ function StatCard({ icon: Icon, label, value, isActive, italic, delay = 0 }: Sta
       transition={{ duration: 0.25, delay }}
       className="rounded-xl flex-1 min-w-0 cursor-default"
       style={{
-        background: "#161B22",
+        background: "#141C16",
         border: "1px solid #21262D",
         borderTop: isActive ? "2px solid #39D353" : "2px solid #21262D",
         padding: "16px 20px",
@@ -139,7 +139,7 @@ export function StatsBar({
   return (
     <div
       className="rounded-none -mx-6 -mt-6 px-6 py-4 mb-6"
-      style={{ background: "#0D1117", borderBottom: "1px solid #21262D" }}
+      style={{ background: "#0D1510", borderBottom: "1px solid #21262D" }}
     >
       {/* Title row */}
       <div className="flex items-center justify-between mb-4">
@@ -161,7 +161,7 @@ export function StatsBar({
               style={{
                 padding: "7px 12px",
                 fontFamily: "var(--font-inter, sans-serif)",
-                background: mockMode ? "rgba(57,211,83,0.12)" : "#161B22",
+                background: mockMode ? "rgba(57,211,83,0.12)" : "#141C16",
                 border: mockMode ? "1px solid rgba(57,211,83,0.35)" : "1px solid #30363D",
                 color: mockMode ? "#39D353" : "#8B949E",
               }}
@@ -192,7 +192,7 @@ export function StatsBar({
             whileTap={{ scale: 0.96 }}
             className={mockMode || scanning ? "flex items-center gap-1.5 rounded-lg text-sm font-semibold transition-all duration-150 opacity-40 cursor-not-allowed" : "btn-scan"}
             style={mockMode || scanning ? {
-              background: "#161B22",
+              background: "#141C16",
               color: "#484F58",
               padding: "8px 16px",
               fontFamily: "var(--font-inter, sans-serif)",

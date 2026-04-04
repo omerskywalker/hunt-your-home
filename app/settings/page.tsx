@@ -25,7 +25,7 @@ const LABEL: React.CSSProperties = {
 
 const INPUT: React.CSSProperties = {
   width: "100%",
-  background: "#0D1117",
+  background: "#0D1510",
   border: "1px solid #21262D",
   borderRadius: 8,
   padding: "9px 12px",
@@ -46,7 +46,7 @@ function Section({
   return (
     <div
       className="rounded-xl p-5"
-      style={{ background: "#161B22", border: "1px solid #21262D" }}
+      style={{ background: "#141C16", border: "1px solid #21262D" }}
     >
       <div className="flex items-center gap-2 mb-5">
         <div className="w-1 h-5 rounded-full" style={{ background: "#39D353" }} />
@@ -95,8 +95,8 @@ function PillGroup({
               fontFamily: "var(--font-inter, sans-serif)",
               cursor: "pointer",
               ...(sel
-                ? { background: "#39D353", color: "#080C10", fontWeight: 600, border: "1px solid #39D353" }
-                : { background: "#1C2430", color: "#8B949E", border: "1px solid #21262D" }),
+                ? { background: "#39D353", color: "#080E0A", fontWeight: 600, border: "1px solid #39D353" }
+                : { background: "#1A2B1C", color: "#8B949E", border: "1px solid #21262D" }),
             }}
             onMouseEnter={(e) => {
               if (!sel) {
@@ -254,7 +254,7 @@ export default function SettingsPage() {
       {/* Page header */}
       <div
         className="-mx-6 -mt-6 px-6 py-4 mb-6 flex items-center justify-between"
-        style={{ background: "#0D1117", borderBottom: "1px solid #21262D" }}
+        style={{ background: "#0D1510", borderBottom: "1px solid #21262D" }}
       >
         <div className="flex items-center gap-2">
           <div className="w-1 h-5 rounded-full" style={{ background: "#39D353" }} />
@@ -283,7 +283,7 @@ export default function SettingsPage() {
             <span
               className="text-[11px] px-2 py-1 rounded"
               style={{
-                background: "#161B22",
+                background: "#141C16",
                 border: "1px solid #21262D",
                 color: "#484F58",
                 fontFamily: "var(--font-inter, sans-serif)",
@@ -513,7 +513,7 @@ export default function SettingsPage() {
               style={{
                 padding: "10px 20px",
                 background: "#39D353",
-                color: "#080C10",
+                color: "#080E0A",
                 fontFamily: "var(--font-inter, sans-serif)",
                 border: "none",
                 cursor: "pointer",
@@ -547,7 +547,7 @@ export default function SettingsPage() {
               className="flex items-center justify-center gap-2 rounded-lg text-sm font-medium transition-all duration-150"
               style={{
                 padding: "10px 20px",
-                background: "#161B22",
+                background: "#141C16",
                 color: "#8B949E",
                 border: "1px solid #21262D",
                 fontFamily: "var(--font-inter, sans-serif)",

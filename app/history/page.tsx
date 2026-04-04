@@ -53,7 +53,7 @@ function ScanRow({ scan, index }: { scan: ScanRecord; index: number }) {
       transition={{ duration: 0.2, delay: index * 0.04 }}
       className="flex items-center gap-4 rounded-xl px-5 py-4"
       style={{
-        background: "#161B22",
+        background: "#141C16",
         border: `1px solid ${hasMatches ? "rgba(57,211,83,0.2)" : "#21262D"}`,
         borderTop: hasMatches ? "2px solid #39D353" : "2px solid #21262D",
       }}
@@ -151,7 +151,7 @@ export default function HistoryPage() {
       {/* Page header */}
       <div
         className="-mx-6 -mt-6 px-6 py-4 mb-6 flex items-center justify-between"
-        style={{ background: "#0D1117", borderBottom: "1px solid #21262D" }}
+        style={{ background: "#0D1510", borderBottom: "1px solid #21262D" }}
       >
         <div className="flex items-center gap-2">
           <div className="w-1 h-5 rounded-full" style={{ background: "#39D353" }} />
@@ -196,7 +196,7 @@ export default function HistoryPage() {
               transition={{ duration: 0.2, delay: i * 0.05 }}
               className="rounded-xl px-4 py-3 flex flex-col gap-1"
               style={{
-                background: "#161B22",
+                background: "#141C16",
                 border: `1px solid #21262D`,
                 borderTop: accent && value > 0 ? "2px solid #39D353" : "2px solid #21262D",
               }}
@@ -239,7 +239,7 @@ export default function HistoryPage() {
             <div
               key={i}
               className="h-20 rounded-xl animate-pulse"
-              style={{ background: "#161B22", border: "1px solid #21262D" }}
+              style={{ background: "#141C16", border: "1px solid #21262D" }}
             />
           ))}
         </div>
