@@ -1,10 +1,12 @@
 import { verifyPin } from "./actions";
 
-export default function LoginPage({
+export default async function LoginPage({
   searchParams,
 }: {
   searchParams: Promise<{ from?: string; error?: string }>;
 }) {
+  const { from, error } = await searchParams;
+
   return (
     <div
       style={{
@@ -68,60 +70,70 @@ export default function LoginPage({
         >
           Enter PIN
         </h1>
-        <p style={{ fontSize: 13, color: "#484F58", marginBottom: 24 }}>
+        <p style={{ fontSize: 13, color: "#484F58", marginBottom: error ? 12 : 24 }}>
           This area is restricted.
         </p>
 
-        <PinForm />
+        {error && (
+          <div
+            style={{
+              background: "rgba(255,107,53,0.08)",
+              border: "1px solid rgba(255,107,53,0.25)",
+              borderRadius: 8,
+              padding: "9px 12px",
+              fontSize: 13,
+              color: "#FF6B35",
+              marginBottom: 16,
+            }}
+          >
+            Incorrect PIN — try again.
+          </div>
+        )}
+
+        <form action={verifyPin}>
+          <input name="from" type="hidden" value={from ?? "/monitor/roadmap"} />
+          <div style={{ marginBottom: 16 }}>
+            <input
+              type="password"
+              name="pin"
+              placeholder="••••••"
+              autoComplete="current-password"
+              inputMode="numeric"
+              required
+              style={{
+                width: "100%",
+                background: "#0D1510",
+                border: `1px solid ${error ? "rgba(255,107,53,0.4)" : "#21262D"}`,
+                borderRadius: 8,
+                padding: "11px 14px",
+                fontSize: 18,
+                letterSpacing: "0.3em",
+                color: "#E6EDF3",
+                fontFamily: "var(--font-inter, sans-serif)",
+                outline: "none",
+                boxSizing: "border-box",
+              }}
+            />
+          </div>
+          <button
+            type="submit"
+            style={{
+              width: "100%",
+              background: "#39D353",
+              color: "#080E0A",
+              border: "none",
+              borderRadius: 8,
+              padding: "11px 0",
+              fontSize: 14,
+              fontWeight: 700,
+              cursor: "pointer",
+              fontFamily: "var(--font-inter, sans-serif)",
+            }}
+          >
+            Unlock
+          </button>
+        </form>
       </div>
     </div>
-  );
-}
-
-function PinForm() {
-  return (
-    <form action={verifyPin}>
-      <input name="from" type="hidden" />
-      <div style={{ marginBottom: 16 }}>
-        <input
-          type="password"
-          name="pin"
-          placeholder="••••••"
-          autoComplete="current-password"
-          inputMode="numeric"
-          required
-          style={{
-            width: "100%",
-            background: "#0D1510",
-            border: "1px solid #21262D",
-            borderRadius: 8,
-            padding: "11px 14px",
-            fontSize: 18,
-            letterSpacing: "0.3em",
-            color: "#E6EDF3",
-            fontFamily: "var(--font-inter, sans-serif)",
-            outline: "none",
-            boxSizing: "border-box",
-          }}
-        />
-      </div>
-      <button
-        type="submit"
-        style={{
-          width: "100%",
-          background: "#39D353",
-          color: "#080E0A",
-          border: "none",
-          borderRadius: 8,
-          padding: "11px 0",
-          fontSize: 14,
-          fontWeight: 700,
-          cursor: "pointer",
-          fontFamily: "var(--font-inter, sans-serif)",
-        }}
-      >
-        Unlock
-      </button>
-    </form>
   );
 }
