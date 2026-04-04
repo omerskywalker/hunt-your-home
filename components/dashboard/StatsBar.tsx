@@ -118,7 +118,7 @@ export function StatsBar({
     setScanning(true);
     toast("Scan started...", { description: "Checking Zillow for new listings" });
     try {
-      const res = await fetch("/api/scrape", { method: "POST" });
+      const res = await fetch("/api/scan-now", { method: "POST" });
       const json = await res.json() as { success: boolean; data?: ScanRecord; error?: string };
       if (json.success && json.data) {
         toast.success(
