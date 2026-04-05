@@ -1,8 +1,8 @@
 import { ZillowListing } from "./types";
 
 const APIFY_BASE = "https://api.apify.com/v2";
-const ACTOR_ID = "apify~zillow-scraper";
-const FALLBACK_ACTOR_ID = "maxcopell~zillow-scraper";
+// apify~zillow-scraper was removed; maxcopell~zillow-scraper is the active public actor
+const ACTOR_ID = "maxcopell~zillow-scraper";
 
 interface ApifyRun {
   id: string;
@@ -157,7 +157,7 @@ async function startApifyRun(
   actorId: string,
   searchArea: string
 ): Promise<ApifyRun | null> {
-  const token = process.env.APIFY_TOKEN;
+  const token = process.env.APIFY_API_TOKEN;
   if (!token) throw new Error("APIFY_TOKEN is not set");
 
   const response = await fetch(
@@ -169,12 +169,9 @@ async function startApifyRun(
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
-        searchTerm: searchArea,
-        listingCategory: "House",
-        maxItems: 100,
-        // Apify actor input variants
-        location: searchArea,
         search: searchArea,
+        type: "sale",
+        maxItems: 100,
       }),
     }
   );
@@ -188,7 +185,7 @@ async function pollRunCompletion(
   runId: string,
   timeoutMs = 120000
 ): Promise<string | null> {
-  const token = process.env.APIFY_TOKEN;
+  const token = process.env.APIFY_API_TOKEN;
   const interval = 3000;
   const deadline = Date.now() + timeoutMs;
 
@@ -211,7 +208,7 @@ async function pollRunCompletion(
 }
 
 async function fetchDatasetItems(datasetId: string): Promise<RawListing[]> {
-  const token = process.env.APIFY_TOKEN;
+  const token = process.env.APIFY_API_TOKEN;
   const resp = await fetch(
     `${APIFY_BASE}/datasets/${datasetId}/items?clean=true&limit=200`,
     {
@@ -225,31 +222,31 @@ async function fetchDatasetItems(datasetId: string): Promise<RawListing[]> {
 export async function runZillowScraper(
   searchArea: string
 ): Promise<ZillowListing[]> {
-  const token = process.env.APIFY_TOKEN;
+  const token = process.env.APIFY_API_TOKEN;
   if (!token) {
-    console.warn("APIFY_TOKEN not set, returning mock data for development");
+    console.warn("APIFY_API_TOKEN not set, returning mock data for development");
     return getMockListings();
   }
 
-  // Try primary actor, then fallback
-  for (const actorId of [ACTOR_ID, FALLBACK_ACTOR_ID]) {
-    try {
-      const run = await startApifyRun(actorId, searchArea);
-      if (!run) continue;
-
-      const datasetId = await pollRunCompletion(run.id);
-      if (!datasetId) continue;
-
-      const rawItems = await fetchDatasetItems(datasetId);
-      if (rawItems.length === 0) continue;
-
-      return normalizeListings(rawItems);
-    } catch (err) {
-      console.error(`Actor ${actorId} failed:`, err);
+  try {
+    const run = await startApifyRun(ACTOR_ID, searchArea);
+    if (!run) {
+      console.error("Apify: failed to start actor run");
+      return [];
     }
-  }
 
-  return [];
+    const datasetId = await pollRunCompletion(run.id);
+    if (!datasetId) {
+      console.error("Apify: run did not complete successfully");
+      return [];
+    }
+
+    const rawItems = await fetchDatasetItems(datasetId);
+    return normalizeListings(rawItems);
+  } catch (err) {
+    console.error("Apify scraper error:", err);
+    return [];
+  }
 }
 
 function getMockListings(): ZillowListing[] {
