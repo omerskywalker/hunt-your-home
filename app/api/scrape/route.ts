@@ -20,13 +20,13 @@ export async function POST(request: NextRequest) {
     return Response.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
 
-  try {
-    const data = await runScrapePipeline();
-    return Response.json({ success: true, data });
-  } catch (err) {
+  // Fire and forget — pipeline runs in background so Vercel cron gets its
+  // 200 response immediately and doesn't mark the job as timed-out.
+  void runScrapePipeline().catch((err) => {
     console.error("Scrape pipeline error:", err);
-    return Response.json({ success: false, error: String(err) }, { status: 500 });
-  }
+  });
+
+  return Response.json({ success: true, started: true }, { status: 202 });
 }
 
 export async function GET(request: NextRequest) {
