@@ -4,12 +4,6 @@ const APIFY_BASE = "https://api.apify.com/v2";
 // apify~zillow-scraper was removed; maxcopell~zillow-scraper is the active public actor
 const ACTOR_ID = "maxcopell~zillow-scraper";
 
-interface ApifyRun {
-  id: string;
-  status: string;
-  defaultDatasetId: string;
-}
-
 interface RawListing {
   // camelCase variants
   id?: string;
@@ -163,73 +157,41 @@ function toZillowUrl(searchArea: string): string {
   return `https://www.zillow.com/${slug}/`;
 }
 
-async function startApifyRun(
-  actorId: string,
-  searchArea: string
-): Promise<ApifyRun | null> {
+/**
+ * Use Apify's run-sync-get-dataset-items endpoint.
+ * Apify holds the connection open until the actor finishes (up to waitSecs),
+ * then streams the dataset items directly — no polling loop needed.
+ * Set waitSecs conservatively; Vercel Pro allows up to 300s function duration.
+ */
+async function runSyncAndFetchItems(searchArea: string): Promise<RawListing[]> {
   const token = process.env.APIFY_API_TOKEN;
   if (!token) throw new Error("APIFY_API_TOKEN is not set");
 
-  const response = await fetch(
-    `${APIFY_BASE}/acts/${encodeURIComponent(actorId)}/runs`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        searchUrls: [{ url: toZillowUrl(searchArea) }],
-        maxItems: 100,
-      }),
-    }
+  const url = new URL(
+    `${APIFY_BASE}/acts/${encodeURIComponent(ACTOR_ID)}/run-sync-get-dataset-items`
   );
+  url.searchParams.set("token", token);
+  url.searchParams.set("clean", "true");
+  url.searchParams.set("limit", "200");
+  // Wait up to 5 minutes on Apify's side before returning an error
+  url.searchParams.set("waitSecs", "280");
+
+  const response = await fetch(url.toString(), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      searchUrls: [{ url: toZillowUrl(searchArea) }],
+      maxItems: 100,
+    }),
+  });
 
   if (!response.ok) {
     const errBody = await response.text().catch(() => "(unreadable)");
-    console.error(`Apify ${response.status} from ${actorId}:`, errBody);
-    return null;
-  }
-  const json = await response.json() as { data: ApifyRun };
-  return json.data;
-}
-
-async function pollRunCompletion(
-  runId: string,
-  timeoutMs = 120000
-): Promise<string | null> {
-  const token = process.env.APIFY_API_TOKEN;
-  const interval = 3000;
-  const deadline = Date.now() + timeoutMs;
-
-  while (Date.now() < deadline) {
-    await new Promise((r) => setTimeout(r, interval));
-
-    const resp = await fetch(`${APIFY_BASE}/actor-runs/${runId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (!resp.ok) continue;
-
-    const json = await resp.json() as { data: ApifyRun };
-    const run = json.data;
-
-    if (run.status === "SUCCEEDED") return run.defaultDatasetId;
-    if (["FAILED", "ABORTED", "TIMED-OUT"].includes(run.status)) return null;
+    console.error(`Apify sync ${response.status}:`, errBody);
+    return [];
   }
 
-  return null;
-}
-
-async function fetchDatasetItems(datasetId: string): Promise<RawListing[]> {
-  const token = process.env.APIFY_API_TOKEN;
-  const resp = await fetch(
-    `${APIFY_BASE}/datasets/${datasetId}/items?clean=true&limit=200`,
-    {
-      headers: { Authorization: `Bearer ${token}` },
-    }
-  );
-  if (!resp.ok) return [];
-  return resp.json() as Promise<RawListing[]>;
+  return response.json() as Promise<RawListing[]>;
 }
 
 export async function runZillowScraper(
@@ -242,19 +204,7 @@ export async function runZillowScraper(
   }
 
   try {
-    const run = await startApifyRun(ACTOR_ID, searchArea);
-    if (!run) {
-      console.error("Apify: failed to start actor run");
-      return [];
-    }
-
-    const datasetId = await pollRunCompletion(run.id);
-    if (!datasetId) {
-      console.error("Apify: run did not complete successfully");
-      return [];
-    }
-
-    const rawItems = await fetchDatasetItems(datasetId);
+    const rawItems = await runSyncAndFetchItems(searchArea);
     return normalizeListings(rawItems);
   } catch (err) {
     console.error("Apify scraper error:", err);
