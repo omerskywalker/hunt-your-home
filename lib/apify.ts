@@ -153,12 +153,22 @@ function normalizeListings(raw: RawListing[]): ZillowListing[] {
   return results;
 }
 
+/** Convert "Frisco, TX" → "https://www.zillow.com/frisco-tx/" */
+function toZillowUrl(searchArea: string): string {
+  const slug = searchArea
+    .toLowerCase()
+    .replace(/,\s*/g, "-")
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "");
+  return `https://www.zillow.com/${slug}/`;
+}
+
 async function startApifyRun(
   actorId: string,
   searchArea: string
 ): Promise<ApifyRun | null> {
   const token = process.env.APIFY_API_TOKEN;
-  if (!token) throw new Error("APIFY_TOKEN is not set");
+  if (!token) throw new Error("APIFY_API_TOKEN is not set");
 
   const response = await fetch(
     `${APIFY_BASE}/acts/${encodeURIComponent(actorId)}/runs`,
@@ -169,8 +179,7 @@ async function startApifyRun(
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
-        search: searchArea,
-        type: "sale",
+        searchUrls: [{ url: toZillowUrl(searchArea) }],
         maxItems: 100,
       }),
     }
