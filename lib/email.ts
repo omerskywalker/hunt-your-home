@@ -1,6 +1,7 @@
 import { Resend } from "resend";
 import { AIScoredListing } from "./types";
 import { AlertEmailTemplate } from "@/components/email/AlertEmailTemplate";
+import { DigestEmailTemplate } from "@/components/email/DigestEmailTemplate";
 
 function getResend(): Resend {
   const key = process.env.RESEND_API_KEY;
@@ -41,26 +42,24 @@ export async function sendMatchDigest(
 
   try {
     const resend = getResend();
-    let allOk = true;
+    const count = listings.length;
+    const subject =
+      count === 1
+        ? `New Match: ${listings[0].address} — $${listings[0].price.toLocaleString()}`
+        : `${count} New Matches in Frisco, TX`;
 
-    // Send sequentially — Resend's free plan caps at 5 req/sec.
-    // Promise.all across 7+ listings reliably hits the rate limit.
-    for (const listing of listings) {
-      const { error } = await resend.emails.send({
-        from: FROM,
-        to,
-        subject: `New Match: ${listing.address} — $${listing.price.toLocaleString()}`,
-        react: AlertEmailTemplate({ listing, tier: "MATCH" }),
-      });
-      if (error) {
-        console.error("Match email failed:", JSON.stringify(error));
-        allOk = false;
-      }
-      // Brief pause to stay under rate limit
-      await new Promise((r) => setTimeout(r, 250));
+    const { error } = await resend.emails.send({
+      from: FROM,
+      to,
+      subject,
+      react: DigestEmailTemplate({ listings }),
+    });
+
+    if (error) {
+      console.error("Match digest email failed:", JSON.stringify(error));
+      return false;
     }
-
-    return allOk;
+    return true;
   } catch (err) {
     console.error("sendMatchDigest failed:", err);
     return false;
