@@ -70,13 +70,14 @@ async function fetchPrStatus(pr: number): Promise<{ pr: GhPr; ci: CiStatus } | n
   }
 }
 
-async function fetchAllPrStatuses() {
+async function fetchAllPrStatuses(overrides: Record<string, RoadmapOverride>) {
   const allItems = ROADMAP.flatMap((b) => b.items);
-  const itemsWithPr = allItems.filter((i) => i.pr != null);
+  // Include PRs from KV overrides (set by kickoff) as well as roadmap-data
+  const itemsWithPr = allItems.filter((i) => (i.pr ?? overrides[i.id]?.pr) != null);
   const results = await Promise.all(
     itemsWithPr.map(async (item) => ({
       id: item.id,
-      data: await fetchPrStatus(item.pr!),
+      data: await fetchPrStatus((item.pr ?? overrides[item.id]?.pr)!),
     }))
   );
   return Object.fromEntries(results.map((r) => [r.id, r.data]));
@@ -255,10 +256,8 @@ function ItemRow({
 // ── Page ───────────────────────────────────────────────────────────────────
 
 export default async function RoadmapMonitorPage() {
-  const [prStatuses, overrides] = await Promise.all([
-    fetchAllPrStatuses(),
-    getRoadmapOverrides(),
-  ]);
+  const overrides = await getRoadmapOverrides();
+  const prStatuses = await fetchAllPrStatuses(overrides);
   const overall = getOverallProgress();
 
   // Compute effective statuses for poller (mirrors ItemRow logic)
