@@ -5,48 +5,70 @@ const APIFY_BASE = "https://api.apify.com/v2";
 const ACTOR_ID = "maxcopell~zillow-scraper";
 
 interface RawListing {
-  // camelCase variants
+  // IDs
   id?: string;
   zpid?: string | number;
+  // Address
   address?: string;
   streetAddress?: string;
   street_address?: string;
+  addressStreet?: string;
+  addressCity?: string;
+  addressState?: string;
+  addressZipcode?: string;
+  city?: string;
+  state?: string;
+  zipcode?: string;
+  // Price — actor returns numeric unformattedPrice and string price like "$995,000"
   price?: number | string;
+  unformattedPrice?: number;
+  // Beds/baths
   bedrooms?: number;
   beds?: number;
   bathrooms?: number;
   baths?: number;
+  // Sqft — actor uses "area", older actors use "livingArea"
+  area?: number;
   livingArea?: number;
   living_area?: number;
   sqft?: number;
+  // Year built
   yearBuilt?: number;
   year_built?: number;
+  // Lot
   lotAreaValue?: number;
   lot_area_value?: number;
   lotSizeSqft?: number;
+  // HOA
   hoaMonthly?: number;
   hoa_monthly?: number;
+  // Days on market — actor uses variableData for this; fall back to 0
   daysOnMarket?: number;
   days_on_market?: number;
+  variableData?: { type?: string; text?: string };
+  // Description
   description?: string;
+  // Photos
   imgSrc?: string;
   img_src?: string;
   photos?: Array<{ url?: string; href?: string } | string>;
+  // URL — actor uses "detailUrl"
+  detailUrl?: string;
   hdpUrl?: string;
   hdp_url?: string;
   zillowUrl?: string;
   url?: string;
+  // Status
   statusType?: string;
   status_type?: string;
   homeStatus?: string;
+  // Price per sqft
   pricePerSquareFoot?: number;
   price_per_square_foot?: number;
+  // Coordinates — actor nests these under latLong
   latitude?: number;
   longitude?: number;
-  // city/state for address construction
-  city?: string;
-  state?: string;
-  zipcode?: string;
+  latLong?: { latitude?: number; longitude?: number };
 }
 
 function normalizeListings(raw: RawListing[]): ZillowListing[] {
@@ -60,12 +82,15 @@ function normalizeListings(raw: RawListing[]): ZillowListing[] {
 
       const address =
         item.address ??
+        item.addressStreet ??
         item.streetAddress ??
         item.street_address ??
-        [item.city, item.state, item.zipcode].filter(Boolean).join(", ") ??
+        [item.addressCity ?? item.city, item.addressState ?? item.state, item.addressZipcode ?? item.zipcode]
+          .filter(Boolean).join(", ") ??
         "Unknown Address";
 
-      const priceRaw = item.price ?? 0;
+      // Prefer unformattedPrice (always a number); fall back to parsing string price
+      const priceRaw = item.unformattedPrice ?? item.price ?? 0;
       const price =
         typeof priceRaw === "string"
           ? parseFloat(priceRaw.replace(/[^0-9.]/g, "")) || 0
@@ -73,7 +98,8 @@ function normalizeListings(raw: RawListing[]): ZillowListing[] {
 
       const beds = item.bedrooms ?? item.beds ?? 0;
       const baths = item.bathrooms ?? item.baths ?? 0;
-      const sqft = item.livingArea ?? item.living_area ?? item.sqft ?? 0;
+      // Actor uses "area"; older actors used "livingArea"
+      const sqft = item.area ?? item.livingArea ?? item.living_area ?? item.sqft ?? 0;
       const yearBuilt = item.yearBuilt ?? item.year_built ?? 1990;
       const lotSizeSqft =
         item.lotAreaValue ?? item.lot_area_value ?? item.lotSizeSqft;
@@ -94,7 +120,9 @@ function normalizeListings(raw: RawListing[]): ZillowListing[] {
         }
       }
 
+      // Actor uses "detailUrl"; older variants used hdpUrl / zillowUrl
       const zillowUrl =
+        item.detailUrl ??
         item.hdpUrl ??
         item.hdp_url ??
         item.zillowUrl ??
@@ -118,6 +146,10 @@ function normalizeListings(raw: RawListing[]): ZillowListing[] {
         item.price_per_square_foot ??
         (sqft > 0 ? Math.round(price / sqft) : undefined);
 
+      // Actor nests coordinates under latLong; fall back to top-level fields
+      const latitude = item.latLong?.latitude ?? item.latitude;
+      const longitude = item.latLong?.longitude ?? item.longitude;
+
       if (price <= 0 || sqft <= 0) continue;
 
       results.push({
@@ -136,8 +168,8 @@ function normalizeListings(raw: RawListing[]): ZillowListing[] {
         zillowUrl,
         listingType,
         pricePerSqft,
-        latitude: item.latitude,
-        longitude: item.longitude,
+        latitude,
+        longitude,
       });
     } catch {
       // skip malformed items
