@@ -161,6 +161,26 @@ export const ROADMAP: RoadmapBatch[] = [
         testRequirements: "Unit tests: reasoning extraction from AI response, storage in alert record, collapsed/expanded state logic." },
     ],
   },
+  {
+    number: 6,
+    title: "Auth & Multi-Tenancy",
+    branchPrefix: "feat/batch-6",
+    summary: "Move from a single-user personal tool to a generic, reusable platform. OAuth gates the app, user preferences are scoped per account, and the search area is fully configurable — removing all Frisco-specific hardcoding.",
+    items: [
+      { id: "6.1", issue: 27, title: "OAuth Authentication", status: "not-started", tests: false,
+        description: "Add NextAuth.js (v5) with Google and GitHub providers. Gate all dashboard pages and API routes behind session middleware. On first login, auto-populate prefs.alertEmail from the OAuth provider email. Show user avatar + sign-out in the sidebar header. Store session in Upstash KV (use @auth/upstash-redis-adapter). Protect /api/scan-now, /api/history, /api/preferences, /api/bookmarks — return 401 if unauthenticated.",
+        testRequirements: "Unit tests: session middleware, unauthenticated API route returns 401, alertEmail auto-population from OAuth profile email." },
+      { id: "6.2", issue: 28, title: "Per-User Data Isolation", status: "not-started", tests: false,
+        description: "Scope all KV keys by userId (from NextAuth session). Change key pattern from hyh:preferences to hyh:u:<userId>:preferences, hyh:seen-ids to hyh:u:<userId>:seen-ids, etc. Update lib/storage.ts to accept userId param on every read/write. Update scrape-pipeline to read userId from preferences record. Each user gets independent scan history, bookmarks, alert history, and seen-ids. Migration: preserve existing global keys as a legacy fallback for the first authenticated user.",
+        testRequirements: "Unit tests: key namespacing helper, no cross-user data leakage (mock two userIds, verify isolation), legacy key fallback." },
+      { id: "6.3", issue: 29, title: "Dynamic City & Boundary Search", status: "not-started", tests: false,
+        description: "Remove all Frisco TX hardcoding. Add a geocoding step: when searchArea changes in Settings, call OpenStreetMap Nominatim (free, no key required) to resolve the city name to a bounding box (west/east/south/north). Store resolvedBounds: {west, east, south, north} in UserPreferences alongside searchArea. In lib/apify.ts, use resolvedBounds instead of the hardcoded Frisco box. Update map view (4.4) default center to use bounds centroid. Settings UI: city input with a 'Resolve bounds' step that previews the bounding box.",
+        testRequirements: "Unit tests: Nominatim response parsing, bounding box extraction, fallback when geocoding fails, centroid calculation." },
+      { id: "6.4", issue: 30, title: "Platform Generalization", status: "not-started", tests: false,
+        description: "Bundle remaining hardcoded assumptions into configurable preferences: (1) configurable scan frequency — add scanFrequency: '2x' | '4x' | '8x' to prefs, update vercel.json cron schedule dynamically via Vercel API; (2) multiple saved searches — searchAreas: string[] (extends 2.4), each with independent seen-ids and filter criteria; (3) remove all 'Frisco TX' references from UI copy, email templates, and default values — replace with dynamic prefs.searchArea; (4) configurable price/bed/bath defaults to sensible nationwide ranges; (5) white-label app name — add appName to UserPreferences, used in email subject lines and header.",
+        testRequirements: "Unit tests: scan frequency cron expression mapping, multi-search dedup, dynamic copy resolution from prefs." },
+    ],
+  },
 ];
 
 export const REPO = "omerskywalker/hunt-your-home";
