@@ -3,6 +3,7 @@ import { getRoadmapOverrides, RoadmapOverride } from "@/lib/storage";
 import { KickoffButton } from "./KickoffButton";
 import { InProgressBadge } from "./InProgressBadge";
 import { RoadmapPoller } from "./RoadmapPoller";
+import { RetryButton } from "./RetryButton";
 
 // Re-fetch on every request so status is always live
 export const dynamic = "force-dynamic";
@@ -188,6 +189,9 @@ function ItemRow({
         )}
 
         <KickoffButton itemId={item.id} disabled={effectiveStatus !== "not-started"} />
+        {effectiveStatus === "in-progress" && prData?.ci.conclusion === "failure" && (
+          <RetryButton itemId={item.id} />
+        )}
 
         {effectivePr && (
           <a
