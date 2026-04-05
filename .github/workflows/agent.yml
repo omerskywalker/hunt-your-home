@@ -63,6 +63,38 @@ jobs:
       - name: Verify types
         run: pnpm tsc --noEmit
 
+      - name: Update wiki session log
+        if: success()
+        run: |
+          DATE=$(date +%Y-%m-%d)
+          TIME=$(date +%H:%M)
+          SESSION_FILE="WIKI/sessions/${DATE}.md"
+
+          if [ ! -f "$SESSION_FILE" ]; then
+            cat > "$SESSION_FILE" << EOF
+          ---
+          type: session-log
+          date: ${DATE}
+          tags: [agent-run]
+          last-updated: ${DATE}
+          ---
+
+          # Session — ${DATE}
+          EOF
+          fi
+
+          cat >> "$SESSION_FILE" << EOF
+
+          ## ${TIME} — [${{ inputs.item_id }}] Agent run
+          **Status:** Success
+          **PR:** #${{ inputs.pr_number }}
+          **Branch:** ${{ inputs.branch }}
+          EOF
+
+          git add WIKI/
+          git diff --cached --quiet || git commit -m "chore: wiki session log for ${{ inputs.item_id }}"
+          git push origin ${{ inputs.branch }} || true
+
       - name: Mark PR ready for review
         if: success()
         env:
@@ -70,6 +102,37 @@ jobs:
         run: |
           gh pr ready ${{ inputs.pr_number }}
           echo "✅ PR #${{ inputs.pr_number }} is ready for review"
+
+      - name: Update wiki on failure
+        if: failure()
+        run: |
+          DATE=$(date +%Y-%m-%d)
+          TIME=$(date +%H:%M)
+          SESSION_FILE="WIKI/sessions/${DATE}.md"
+
+          if [ ! -f "$SESSION_FILE" ]; then
+            cat > "$SESSION_FILE" << EOF
+          ---
+          type: session-log
+          date: ${DATE}
+          tags: [agent-run]
+          last-updated: ${DATE}
+          ---
+
+          # Session — ${DATE}
+          EOF
+          fi
+
+          cat >> "$SESSION_FILE" << EOF
+
+          ## ${TIME} — [${{ inputs.item_id }}] Agent run FAILED
+          **PR:** #${{ inputs.pr_number }}
+          **Logs:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          EOF
+
+          git add WIKI/ 2>/dev/null || true
+          git diff --cached --quiet || git commit -m "chore: wiki failure log for ${{ inputs.item_id }}" 2>/dev/null || true
+          git push origin ${{ inputs.branch }} 2>/dev/null || true
 
       - name: Comment on failure
         if: failure()
