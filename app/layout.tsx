@@ -79,7 +79,7 @@ export default function RootLayout({
         <Sidebar />
         <div className="lg:ml-[220px] flex flex-col min-h-screen">
           <Header />
-          <main className="flex-1 px-6 py-6">{children}</main>
+          <main className="flex-1 px-6 py-6 pb-20 lg:pb-6">{children}</main>
           <footer
             className="text-center mt-8 py-8"
             style={{ borderTop: "1px solid #21262D" }}

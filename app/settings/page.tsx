@@ -146,9 +146,9 @@ function Toggle({
         role="switch"
         aria-checked={checked}
         onClick={() => onChange(!checked)}
-        className="relative inline-flex shrink-0 cursor-pointer rounded-full transition-all duration-200"
+        className="relative inline-flex shrink-0 cursor-pointer rounded-full transition-all duration-200 touch-manipulation"
         style={{
-          width: 36, height: 20, padding: 2,
+          width: 44, height: 24, padding: 2, // Larger toggle for touch
           background: checked ? "#1A7F37" : "#30363D",
           border: checked ? "1px solid rgba(57,211,83,0.3)" : "1px solid #484F58",
           boxShadow: checked ? "0 0 8px rgba(57,211,83,0.2)" : "none",
@@ -157,9 +157,9 @@ function Toggle({
         <span
           className="inline-block rounded-full shadow transition-all duration-200"
           style={{
-            width: 14, height: 14,
+            width: 18, height: 18, // Larger thumb
             background: checked ? "#39D353" : "#8B949E",
-            transform: checked ? "translateX(16px)" : "translateX(0)",
+            transform: checked ? "translateX(20px)" : "translateX(0)",
           }}
         />
       </button>
@@ -389,7 +389,7 @@ export default function SettingsPage() {
             />
           </Field>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label={`Min Price`}>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: "#484F58" }}>$</span>
@@ -399,7 +399,7 @@ export default function SettingsPage() {
                   min={0}
                   step={25000}
                   onChange={(e) => updatePrefs({ minPrice: Number(e.target.value) })}
-                  style={{ ...INPUT, paddingLeft: 24 }}
+                  style={{ ...INPUT, paddingLeft: 28 }}
                   onFocus={focusInput}
                   onBlur={blurInput}
                   aria-label="Minimum price"
@@ -415,7 +415,7 @@ export default function SettingsPage() {
                   min={0}
                   step={25000}
                   onChange={(e) => updatePrefs({ maxPrice: Number(e.target.value) })}
-                  style={{ ...INPUT, paddingLeft: 24 }}
+                  style={{ ...INPUT, paddingLeft: 28 }}
                   onFocus={focusInput}
                   onBlur={blurInput}
                   aria-label="Maximum price"
@@ -440,7 +440,7 @@ export default function SettingsPage() {
             />
           </Field>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Min Sqft">
               <input
                 type="number"
