@@ -2,6 +2,7 @@ import { ROADMAP, REPO, getBatchProgress, getOverallProgress, RoadmapItem, ItemS
 import { getRoadmapOverrides, RoadmapOverride } from "@/lib/storage";
 import { KickoffButton } from "./KickoffButton";
 import { InProgressBadge } from "./InProgressBadge";
+import { RoadmapPoller } from "./RoadmapPoller";
 
 // Re-fetch on every request so status is always live
 export const dynamic = "force-dynamic";
@@ -256,6 +257,23 @@ export default async function RoadmapMonitorPage() {
   ]);
   const overall = getOverallProgress();
 
+  // Compute effective statuses for poller (mirrors ItemRow logic)
+  const allItems = ROADMAP.flatMap((b) => b.items);
+  const inProgressIds = allItems
+    .filter((item) => {
+      const isMerged = prStatuses[item.id]?.pr?.merged_at != null;
+      const effective: ItemStatus = isMerged ? "done" : (overrides[item.id]?.status ?? item.status);
+      return effective === "in-progress";
+    })
+    .map((item) => item.id);
+  const doneIds = allItems
+    .filter((item) => {
+      const isMerged = prStatuses[item.id]?.pr?.merged_at != null;
+      const effective: ItemStatus = isMerged ? "done" : (overrides[item.id]?.status ?? item.status);
+      return effective === "done";
+    })
+    .map((item) => item.id);
+
   return (
     <div
       style={{
@@ -266,6 +284,8 @@ export default async function RoadmapMonitorPage() {
         paddingBottom: 48,
       }}
     >
+      <RoadmapPoller inProgressIds={inProgressIds} doneIds={doneIds} />
+
       {/* Header */}
       <div
         style={{
