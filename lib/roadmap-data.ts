@@ -51,14 +51,22 @@ ${item.testRequirements}
 - TypeScript clean (\`pnpm tsc --noEmit\`)
 - No regressions in existing test suite
 
+## Test setup
+- Runner: **vitest** + **jsdom** environment
+- Installed: \`@testing-library/react\`, \`@testing-library/jest-dom\`, \`vitest\`
+- Test files go in \`tests/\` with \`.test.ts\` or \`.test.tsx\`
+- Mock Next.js navigation: \`vi.mock('next/navigation', () => ({ usePathname: () => '/', useRouter: () => ({ push: vi.fn() }) }))\`
+- Mock framer-motion if rendering animated components: \`vi.mock('framer-motion', () => ({ motion: { div: ({ children, ...p }) => <div {...p}>{children}</div> }, AnimatePresence: ({ children }) => children }))\`
+
 ## Instructions
 1. Start by reading \`CLAUDE.md\` — it has architecture, color tokens, KV key names, conventions, and known gotchas
 2. Read relevant existing code before writing anything new
 3. Follow existing patterns exactly (colors, component structure, KV access via \`lib/storage.ts\`)
-4. Write tests in \`tests/${item.id.replace(".", "-")}-${item.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}.test.ts\`
-5. Run \`pnpm test\` — all tests must pass
+4. Write tests in \`tests/${item.id.replace(".", "-")}-${item.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}.test.tsx\`
+5. Run \`pnpm test\` — all tests must pass including new ones
 6. Run \`pnpm tsc --noEmit\` — must be clean
-7. Commit with: \`feat: ${item.title}\\n\\nCloses #${item.issue ?? "?"}\`
+7. Commit all implementation + test files: \`git add -A && git commit -m "feat: ${item.title}\\n\\nCloses #${item.issue ?? "?"}"\`
+8. Push: \`git push origin HEAD\`
 
 Do not add unrequested features, extra error handling, or comments beyond what the logic requires.`;
 }
