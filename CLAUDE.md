@@ -2,6 +2,14 @@
 
 # HuntYourHome — Agent Context
 
+## Wiki (read before starting any task)
+- **Project wiki:** `WIKI/index.md` — architecture, key files, design tokens, current status
+- **Gotchas:** `WIKI/gotchas.md` — real failures that have happened, read this first
+- **Agent guide:** `WIKI/agents.md` — your environment, test setup, required completion steps
+- **Global wiki:** `~/.claude/wiki/index.md` — cross-project context, who Omer is, patterns
+
+---
+
 ## What this app does
 AI-powered Zillow monitoring for Frisco, TX. Scrapes Zillow via Apify 4x daily, scores each new listing with Claude Haiku, and emails matching listings to a configured address. Single-user personal tool — no auth, no multi-tenancy.
 

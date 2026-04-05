@@ -35,10 +35,19 @@ async function fetchContextFiles(files: string[]): Promise<string> {
       return `### ${filePath}\n\`\`\`${lang}\n${decoded}\n\`\`\``;
     })
   );
-  return results
+  const fetched = results
     .filter((r): r is PromiseFulfilledResult<string> => r.status === "fulfilled" && r.value !== null)
     .map((r) => r.value)
     .join("\n\n");
+
+  // Always append the project gotchas — prevents repeating history
+  const gotchasRes = await ghFetch("/contents/WIKI/gotchas.md");
+  if (gotchasRes.ok) {
+    const gotchasData = await gotchasRes.json() as { content: string };
+    const gotchas = Buffer.from(gotchasData.content, "base64").toString("utf-8");
+    return fetched + `\n\n### WIKI/gotchas.md (read this — do not repeat these mistakes)\n\`\`\`markdown\n${gotchas}\n\`\`\``;
+  }
+  return fetched;
 }
 
 export async function POST(request: NextRequest) {
