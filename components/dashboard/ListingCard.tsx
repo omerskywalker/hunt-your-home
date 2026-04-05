@@ -19,23 +19,16 @@ function ScoreBadge({ score, tier }: { score: number; tier: "HOT" | "MATCH" }) {
   return (
     <div
       className="flex items-center gap-1 px-2 py-0.5 rounded-md border text-[11px] font-bold min-h-[22px]"
-      style={
-        isHot
-          ? {
-              background: "rgba(57,211,83,0.1)",
-              borderColor: "rgba(57,211,83,0.25)",
-              color: "#39D353",
-            }
-          : {
-              background: "rgba(88,166,255,0.1)",
-              borderColor: "rgba(88,166,255,0.25)",
-              color: "#58A6FF",
-            }
-      }
+      style={{
+        background: "rgba(8,12,16,0.82)",
+        backdropFilter: "blur(6px)",
+        borderColor: isHot ? "rgba(57,211,83,0.5)" : "rgba(88,166,255,0.5)",
+        color: isHot ? "#39D353" : "#58A6FF",
+      }}
     >
       <span
-        className="opacity-50 font-normal text-[9px] uppercase tracking-wide"
-        style={{ fontFamily: "var(--font-inter, sans-serif)" }}
+        className="font-normal text-[9px] uppercase tracking-wide"
+        style={{ opacity: 0.7, fontFamily: "var(--font-inter, sans-serif)" }}
       >
         AI
       </span>
@@ -51,8 +44,9 @@ function TierBadge({ tier }: { tier: "HOT" | "MATCH" }) {
     <span
       className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider"
       style={{
-        background: "rgba(255,107,53,0.1)",
-        border: "1px solid rgba(255,107,53,0.2)",
+        background: "rgba(8,12,16,0.82)",
+        backdropFilter: "blur(6px)",
+        border: "1px solid rgba(255,107,53,0.55)",
         color: "#FF6B35",
         fontFamily: "var(--font-inter, sans-serif)",
       }}
@@ -63,13 +57,14 @@ function TierBadge({ tier }: { tier: "HOT" | "MATCH" }) {
     <span
       className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider"
       style={{
-        background: "rgba(88,166,255,0.1)",
-        border: "1px solid rgba(88,166,255,0.2)",
+        background: "rgba(8,12,16,0.82)",
+        backdropFilter: "blur(6px)",
+        border: "1px solid rgba(88,166,255,0.55)",
         color: "#58A6FF",
         fontFamily: "var(--font-inter, sans-serif)",
       }}
     >
-      ✦ MATCH
+      MATCH
     </span>
   );
 }
