@@ -1,0 +1,6 @@
+# Agent Task: Mobile Responsiveness
+
+Sidebar → bottom nav on mobile. Stats cards stack vertically. Listing cards reflow to single-column. Settings inputs are touch-friendly. Target: fully usable at 390px width (iPhone 15 viewport). Use Tailwind responsive prefixes (sm:, lg:) throughout. The sidebar component is at components/layout/Sidebar.tsx.
+
+## Test requirements
+Snapshot tests for breakpoint-sensitive components. Vitest + jsdom viewport simulation at 390px and 768px.
