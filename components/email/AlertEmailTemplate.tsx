@@ -50,9 +50,7 @@ export function AlertEmailTemplate({ listing, tier }: AlertEmailTemplateProps) {
           <Section style={styles.header}>
             <Row>
               <Column>
-                <Text style={styles.logo}>
-                  <span style={{ color: "#f97316" }}>HYH</span>
-                </Text>
+                <Text style={styles.logo}>HYH</Text>
               </Column>
               <Column align="right">
                 <Text
