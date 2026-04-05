@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
   const dispatchRes = await ghFetch("/actions/workflows/agent.yml/dispatches", {
     method: "POST",
     body: JSON.stringify({
-      ref: branch,
+      ref: "main",
       inputs: {
         item_id: item.id,
         branch,
