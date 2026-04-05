@@ -1,6 +1,6 @@
-# Agent Task: Mobile Responsiveness
+# Agent Task: Rate Limiting on /api/scan-now
 
-Sidebar → bottom nav on mobile. Stats cards stack vertically. Listing cards reflow to single-column. Settings inputs are touch-friendly. Target: fully usable at 390px width (iPhone 15 viewport). Use Tailwind responsive prefixes (sm:, lg:) throughout. The sidebar component is at components/layout/Sidebar.tsx.
+Redis counter key hyh:scan-ratelimit:<YYYY-MM-DD> (string, incr). Max 10 manual scans per calendar day. On limit: return HTTP 429 with JSON { success: false, error: 'Rate limit reached', remaining: 0, resetAt: '<ISO date>' }. Implement in app/api/scan-now/route.ts using kv from @vercel/kv. Set TTL of 86400s on the counter key.
 
 ## Test requirements
-Snapshot tests for breakpoint-sensitive components. Vitest + jsdom viewport simulation at 390px and 768px.
+Unit tests for: increment logic, block at limit (returns 429), reset at new day (different date key), remaining count in response.

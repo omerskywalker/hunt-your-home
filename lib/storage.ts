@@ -208,3 +208,59 @@ export async function setRoadmapOverride(itemId: string, data: RoadmapOverride):
   const current = await getRoadmapOverrides();
   await kv.set(KEYS.ROADMAP_OVERRIDES, { ...current, [itemId]: data });
 }
+
+// ── Rate limiting ──────────────────────────────────────────────────────────────
+
+const SCAN_RATE_LIMIT_MAX = 10;
+const SCAN_RATE_LIMIT_TTL = 86400; // 24 hours in seconds
+
+function getRateLimitKey(): string {
+  const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+  return `hyh:scan-ratelimit:${today}`;
+}
+
+export async function checkScanRateLimit(): Promise<{
+  allowed: boolean;
+  remaining: number;
+  resetAt: string;
+}> {
+  try {
+    const key = getRateLimitKey();
+    const current = await kv.get<number>(key) || 0;
+    
+    const remaining = Math.max(0, SCAN_RATE_LIMIT_MAX - current);
+    const allowed = current < SCAN_RATE_LIMIT_MAX;
+    
+    // Calculate reset time (start of next day)
+    const tomorrow = new Date();
+    tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
+    tomorrow.setUTCHours(0, 0, 0, 0);
+    
+    return {
+      allowed,
+      remaining,
+      resetAt: tomorrow.toISOString(),
+    };
+  } catch {
+    // On error, allow the request
+    return {
+      allowed: true,
+      remaining: SCAN_RATE_LIMIT_MAX,
+      resetAt: new Date(Date.now() + 86400000).toISOString(),
+    };
+  }
+}
+
+export async function incrementScanRateLimit(): Promise<void> {
+  try {
+    const key = getRateLimitKey();
+    const current = await kv.incr(key);
+    
+    // Set TTL only on first increment (when current === 1)
+    if (current === 1) {
+      await kv.expire(key, SCAN_RATE_LIMIT_TTL);
+    }
+  } catch {
+    // non-fatal
+  }
+}
