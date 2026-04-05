@@ -176,7 +176,11 @@ async function startApifyRun(
     }
   );
 
-  if (!response.ok) return null;
+  if (!response.ok) {
+    const errBody = await response.text().catch(() => "(unreadable)");
+    console.error(`Apify ${response.status} from ${actorId}:`, errBody);
+    return null;
+  }
   const json = await response.json() as { data: ApifyRun };
   return json.data;
 }
