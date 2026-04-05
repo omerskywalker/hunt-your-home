@@ -53,11 +53,25 @@ export async function POST(request: NextRequest) {
     body: JSON.stringify({ ref: `refs/heads/${branch}`, sha: mainSha }),
   });
   if (!branchRes.ok && branchRes.status !== 422) {
-    // 422 = branch already exists, that's fine
     throw new Error("Failed to create branch");
   }
 
-  // 3. Create draft PR
+  // 3. Push an initial commit so the branch is ahead of main
+  //    (GitHub rejects PRs where head === base with no commits)
+  const taskContent = Buffer.from(
+    `# Agent Task: ${item.title}\n\n${item.description}\n\n## Test requirements\n${item.testRequirements}\n`
+  ).toString("base64");
+
+  await ghFetch(`/contents/.agent-task`, {
+    method: "PUT",
+    body: JSON.stringify({
+      message: `chore: init task branch for ${item.id} — ${item.title}`,
+      content: taskContent,
+      branch,
+    }),
+  });
+
+  // 4. Create draft PR
   const prBody = `## Roadmap item\nCloses #${item.issue ?? ""}\n\n## What changed\n_Implemented by Claude Code agent — see workflow run for details._\n\n## Test plan\n- [ ] Tests written and passing (\`pnpm test\`)\n- [ ] Type-check clean (\`pnpm tsc --noEmit\`)\n- [ ] CI pipeline green\n- [ ] \`lib/roadmap-data.ts\` updated with PR number and status\n- [ ] Manually verified on production after merge`;
 
   const prRes = await ghFetch("/pulls", {
@@ -76,7 +90,7 @@ export async function POST(request: NextRequest) {
   }
   const pr = await prRes.json() as { number: number; html_url: string };
 
-  // 4. Trigger workflow_dispatch on agent.yml
+  // 5. Trigger workflow_dispatch on agent.yml
   const dispatchRes = await ghFetch("/actions/workflows/agent.yml/dispatches", {
     method: "POST",
     body: JSON.stringify({
@@ -95,7 +109,7 @@ export async function POST(request: NextRequest) {
     // Non-fatal — branch and PR were created, user can trigger manually
   }
 
-  // 5. Store override in KV
+  // 6. Store override in KV
   await setRoadmapOverride(itemId, {
     status: "in-progress",
     pr: pr.number,
