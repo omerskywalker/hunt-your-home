@@ -1,4 +1,6 @@
 import { ROADMAP, REPO, getBatchProgress, getOverallProgress, RoadmapItem, ItemStatus } from "@/lib/roadmap-data";
+import { getRoadmapOverrides, RoadmapOverride } from "@/lib/storage";
+import { KickoffButton } from "./KickoffButton";
 
 // Re-fetch on every request so status is always live
 export const dynamic = "force-dynamic";
@@ -117,13 +119,16 @@ function ProgressBar({ pct, color = "#39D353" }: { pct: number; color?: string }
 function ItemRow({
   item,
   prData,
+  override,
 }: {
   item: RoadmapItem;
   prData: Awaited<ReturnType<typeof fetchPrStatus>>;
+  override?: RoadmapOverride;
 }) {
   const dot = prData ? ciDot(prData.ci.conclusion) : null;
   const isMerged = prData?.pr?.merged_at != null;
-  const effectiveStatus: ItemStatus = isMerged ? "done" : item.status;
+  const effectiveStatus: ItemStatus = isMerged ? "done" : (override?.status ?? item.status);
+  const effectivePr = item.pr ?? override?.pr;
 
   return (
     <div
@@ -176,9 +181,11 @@ function ItemRow({
           {statusLabel(effectiveStatus)}
         </span>
 
-        {item.pr && (
+        <KickoffButton itemId={item.id} disabled={effectiveStatus !== "not-started"} />
+
+        {effectivePr && (
           <a
-            href={`https://github.com/${REPO}/pull/${item.pr}`}
+            href={`https://github.com/${REPO}/pull/${effectivePr}`}
             target="_blank"
             rel="noopener"
             style={{
@@ -192,7 +199,7 @@ function ItemRow({
               fontFamily: "var(--font-inter, sans-serif)",
             }}
           >
-            PR #{item.pr}
+            PR #{effectivePr}
           </a>
         )}
 
@@ -238,7 +245,10 @@ function ItemRow({
 // ── Page ───────────────────────────────────────────────────────────────────
 
 export default async function RoadmapMonitorPage() {
-  const prStatuses = await fetchAllPrStatuses();
+  const [prStatuses, overrides] = await Promise.all([
+    fetchAllPrStatuses(),
+    getRoadmapOverrides(),
+  ]);
   const overall = getOverallProgress();
 
   return (
@@ -344,6 +354,7 @@ export default async function RoadmapMonitorPage() {
                     key={item.id}
                     item={item}
                     prData={prStatuses[item.id] ?? null}
+                    override={overrides[item.id]}
                   />
                 ))}
               </div>
