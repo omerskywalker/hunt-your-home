@@ -1,9 +1,9 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Scan, Bell, Clock, Database, Zap, FlaskConical } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { ScanRecord } from "@/lib/types";
 
@@ -21,9 +21,157 @@ interface StatCardProps {
   icon: React.ElementType;
   label: string;
   value: string | number;
-  isActive?: boolean;  // drives accent color + top border
+  isActive?: boolean;
   italic?: boolean;
   delay?: number;
+}
+
+const SCAN_STAGES = [
+  { until: 12,  text: "Connecting to Zillow..." },
+  { until: 30,  text: "Fetching listings..." },
+  { until: 50,  text: "Applying filters..." },
+  { until: 80,  text: "Scoring matches with Claude AI..." },
+  { until: Infinity, text: "Finalizing results..." },
+];
+
+function useScanStage(elapsedSecs: number) {
+  return SCAN_STAGES.find((s) => elapsedSecs < s.until)!.text;
+}
+
+function ScanningBanner({ elapsedSecs }: { elapsedSecs: number }) {
+  const stageText = useScanStage(elapsedSecs);
+  const pct = Math.min(92, (elapsedSecs / 90) * 100);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+      animate={{ opacity: 1, height: "auto", marginBottom: 16 }}
+      exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+      transition={{ duration: 0.3 }}
+      style={{ overflow: "hidden" }}
+    >
+      <div
+        style={{
+          background: "rgba(57,211,83,0.05)",
+          border: "1px solid rgba(57,211,83,0.2)",
+          borderRadius: 12,
+          padding: "14px 18px",
+        }}
+      >
+        {/* Top row: pulse dot + stage text + elapsed */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2.5">
+            {/* Animated pulse dot */}
+            <div style={{ position: "relative", width: 10, height: 10, flexShrink: 0 }}>
+              <motion.div
+                animate={{ scale: [1, 1.8, 1], opacity: [1, 0, 1] }}
+                transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  borderRadius: "50%",
+                  background: "#39D353",
+                  opacity: 0.4,
+                }}
+              />
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 2,
+                  borderRadius: "50%",
+                  background: "#39D353",
+                }}
+              />
+            </div>
+
+            <AnimatePresence mode="wait">
+              <motion.span
+                key={stageText}
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.25 }}
+                style={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "#E6EDF3",
+                  fontFamily: "var(--font-inter, sans-serif)",
+                }}
+              >
+                {stageText}
+              </motion.span>
+            </AnimatePresence>
+          </div>
+
+          <span
+            style={{
+              fontSize: 11,
+              color: "#484F58",
+              fontFamily: "var(--font-mono, monospace)",
+            }}
+          >
+            {elapsedSecs}s
+          </span>
+        </div>
+
+        {/* Progress bar */}
+        <div
+          style={{
+            height: 3,
+            background: "rgba(57,211,83,0.12)",
+            borderRadius: 99,
+            overflow: "hidden",
+          }}
+        >
+          <motion.div
+            animate={{ width: `${pct}%` }}
+            transition={{ duration: 1, ease: "easeOut" }}
+            style={{
+              height: "100%",
+              background: "linear-gradient(90deg, #39D353, #58A6FF)",
+              borderRadius: 99,
+            }}
+          />
+        </div>
+
+        {/* Stage dots */}
+        <div className="flex items-center gap-1.5 mt-2.5">
+          {SCAN_STAGES.slice(0, -1).map((stage, i) => {
+            const stageBoundary = SCAN_STAGES[i].until;
+            const done = elapsedSecs >= stageBoundary;
+            const active = !done && (i === 0 || elapsedSecs >= SCAN_STAGES[i - 1].until);
+            return (
+              <div
+                key={stage.text}
+                style={{
+                  width: 5,
+                  height: 5,
+                  borderRadius: "50%",
+                  background: done
+                    ? "#39D353"
+                    : active
+                    ? "rgba(57,211,83,0.5)"
+                    : "#21262D",
+                  transition: "background 0.4s",
+                  flexShrink: 0,
+                }}
+              />
+            );
+          })}
+          <span
+            style={{
+              fontSize: 10,
+              color: "#484F58",
+              fontFamily: "var(--font-inter, sans-serif)",
+              marginLeft: 4,
+            }}
+          >
+            typically completes in 60–90s
+          </span>
+        </div>
+      </div>
+    </motion.div>
+  );
 }
 
 function StatCard({ icon: Icon, label, value, isActive, italic, delay = 0 }: StatCardProps) {
@@ -49,7 +197,6 @@ function StatCard({ icon: Icon, label, value, isActive, italic, delay = 0 }: Sta
         (e.currentTarget as HTMLDivElement).style.boxShadow = "none";
       }}
     >
-      {/* Icon + label row */}
       <div className="flex items-center gap-1.5 mb-2">
         <Icon size={14} style={{ color: "#484F58", flexShrink: 0 }} />
         <span
@@ -65,7 +212,6 @@ function StatCard({ icon: Icon, label, value, isActive, italic, delay = 0 }: Sta
           {label}
         </span>
       </div>
-      {/* Value */}
       <div
         style={{
           fontSize: italic ? 16 : 36,
@@ -92,6 +238,93 @@ export function StatsBar({
   onToggleMock,
 }: StatsBarProps) {
   const [scanning, setScanning] = useState(false);
+  const [elapsedSecs, setElapsedSecs] = useState(0);
+  const scanStartedAt = useRef<number | null>(null);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Clean up on unmount
+  useEffect(() => {
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, []);
+
+  function stopScanning(success: boolean, matches?: number, found?: number) {
+    if (pollRef.current) clearInterval(pollRef.current);
+    if (timerRef.current) clearInterval(timerRef.current);
+    pollRef.current = null;
+    timerRef.current = null;
+    setScanning(false);
+    setElapsedSecs(0);
+    scanStartedAt.current = null;
+
+    if (success) {
+      const desc = found !== undefined
+        ? `Found ${found} listings · ${matches ?? 0} matched your criteria`
+        : "New results are ready";
+      toast.success("Scan complete", { description: desc });
+      onScanComplete?.();
+    } else {
+      toast.error("Scan failed", { description: "Check Vercel logs for details" });
+    }
+  }
+
+  function startPolling(startedAt: number) {
+    // Elapsed counter — ticks every second
+    timerRef.current = setInterval(() => {
+      setElapsedSecs(Math.floor((Date.now() - startedAt) / 1000));
+    }, 1000);
+
+    // Poll history every 5s until a scan record newer than startedAt appears
+    pollRef.current = setInterval(async () => {
+      // Safety cutoff at 3 minutes
+      if (Date.now() - startedAt > 180_000) {
+        stopScanning(false);
+        return;
+      }
+      try {
+        const res = await fetch("/api/history");
+        if (!res.ok) return;
+        const json = await res.json() as {
+          success: boolean;
+          data?: { stats?: { lastScan?: { runAt: string; matchedListings?: number; listingsFound?: number } } };
+        };
+        const ls = json.data?.stats?.lastScan;
+        if (ls && new Date(ls.runAt).getTime() > startedAt) {
+          stopScanning(true, ls.matchedListings, ls.listingsFound);
+        }
+      } catch {
+        // ignore transient fetch errors, keep polling
+      }
+    }, 5000);
+  }
+
+  async function handleScanNow() {
+    if (mockMode) {
+      toast("Mock mode is on", { description: "Disable mock mode to run a real scan" });
+      return;
+    }
+    const startedAt = Date.now();
+    scanStartedAt.current = startedAt;
+    setScanning(true);
+    setElapsedSecs(0);
+
+    try {
+      const res = await fetch("/api/scan-now", { method: "POST" });
+      const json = await res.json() as { success: boolean; error?: string };
+      if (!json.success) {
+        setScanning(false);
+        toast.error("Scan failed", { description: json.error ?? "Unknown error" });
+        return;
+      }
+      startPolling(startedAt);
+    } catch {
+      setScanning(false);
+      toast.error("Scan failed", { description: "Network error" });
+    }
+  }
 
   const rawLastScan = lastScan
     ? formatDistanceToNow(new Date(lastScan.runAt), { addSuffix: true })
@@ -100,41 +333,11 @@ export function StatsBar({
     rawLastScan === "never"
       ? "never"
       : rawLastScan
-          .replace(" minutes", "m")
-          .replace(" hours", "h")
-          .replace(" days", "d")
-          .replace(" seconds", "s")
-          .replace(" minute", "m")
-          .replace(" hour", "h")
-          .replace(" day", "d")
-          .replace(" second", "s");
+          .replace(" minutes", "m").replace(" minute", "m")
+          .replace(" hours", "h").replace(" hour", "h")
+          .replace(" days", "d").replace(" day", "d")
+          .replace(" seconds", "s").replace(" second", "s");
   const lastScanIsNever = !lastScan;
-
-  async function handleScanNow() {
-    if (mockMode) {
-      toast("Mock mode is on", { description: "Disable mock mode to run a real scan" });
-      return;
-    }
-    setScanning(true);
-    toast("Scan started...", { description: "Checking Zillow for new listings" });
-    try {
-      const res = await fetch("/api/scan-now", { method: "POST" });
-      const json = await res.json() as { success: boolean; started?: boolean; error?: string };
-      if (json.success) {
-        toast.success("Scan running in background", {
-          description: "Results will appear in your history in ~1 minute",
-        });
-        // Refresh stats after a delay to pick up the scan record once it lands in KV
-        setTimeout(() => onScanComplete?.(), 90_000);
-      } else {
-        toast.error("Scan failed", { description: json.error ?? "Unknown error" });
-      }
-    } catch {
-      toast.error("Scan failed", { description: "Network error" });
-    } finally {
-      setScanning(false);
-    }
-  }
 
   return (
     <div
@@ -153,7 +356,6 @@ export function StatsBar({
         </h1>
 
         <div className="flex items-center gap-2">
-          {/* Mock toggle — dev only */}
           {process.env.NEXT_PUBLIC_ENABLE_MOCK === "true" && onToggleMock && (
             <button
               onClick={onToggleMock}
@@ -185,12 +387,13 @@ export function StatsBar({
             </button>
           )}
 
-          {/* Scan Now */}
           <motion.button
             onClick={handleScanNow}
             disabled={scanning}
             whileTap={{ scale: 0.96 }}
-            className={mockMode || scanning ? "flex items-center gap-1.5 rounded-lg text-sm font-semibold transition-all duration-150 opacity-40 cursor-not-allowed" : "btn-scan"}
+            className={mockMode || scanning
+              ? "flex items-center gap-1.5 rounded-lg text-sm font-semibold transition-all duration-150 opacity-40 cursor-not-allowed"
+              : "btn-scan"}
             style={mockMode || scanning ? {
               background: "#141C16",
               color: "#484F58",
@@ -234,37 +437,17 @@ export function StatsBar({
         </motion.div>
       )}
 
+      {/* Scanning banner */}
+      <AnimatePresence>
+        {scanning && <ScanningBanner elapsedSecs={elapsedSecs} />}
+      </AnimatePresence>
+
       {/* Stat cards */}
       <div className="flex flex-wrap gap-3">
-        <StatCard
-          icon={Scan}
-          label="Scans Today"
-          value={todayScans}
-          isActive={todayScans > 0}
-          delay={0}
-        />
-        <StatCard
-          icon={Bell}
-          label="New Matches"
-          value={recentMatches}
-          isActive={recentMatches > 0}
-          delay={0.07}
-        />
-        <StatCard
-          icon={Clock}
-          label="Last Scan"
-          value={lastScanValue}
-          isActive={!lastScanIsNever}
-          italic={lastScanIsNever}
-          delay={0.14}
-        />
-        <StatCard
-          icon={Database}
-          label="Listings Seen"
-          value={seenCount.toLocaleString()}
-          isActive={seenCount > 0}
-          delay={0.21}
-        />
+        <StatCard icon={Scan}     label="Scans Today"    value={todayScans}               isActive={todayScans > 0}    delay={0}    />
+        <StatCard icon={Bell}     label="New Matches"    value={recentMatches}             isActive={recentMatches > 0} delay={0.07} />
+        <StatCard icon={Clock}    label="Last Scan"      value={lastScanValue}             isActive={!lastScanIsNever}  italic={lastScanIsNever} delay={0.14} />
+        <StatCard icon={Database} label="Listings Seen"  value={seenCount.toLocaleString()} isActive={seenCount > 0}    delay={0.21} />
       </div>
     </div>
   );
