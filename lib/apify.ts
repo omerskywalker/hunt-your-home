@@ -226,7 +226,9 @@ async function runSyncAndFetchItems(searchArea: string): Promise<RawListing[]> {
   );
   url.searchParams.set("token", token);
   url.searchParams.set("clean", "true");
-  url.searchParams.set("limit", "150");   // cap dataset items returned
+  // maxItems as a query param is required by Apify for pay-per-result actors —
+  // omitting it (or using "limit") causes a 400 "must be greater than zero" error.
+  url.searchParams.set("maxItems", "150");
   url.searchParams.set("waitSecs", "120"); // MAP_MARKERS finishes in <60s
 
   const zillowUrl = toZillowUrl(searchArea);
@@ -237,7 +239,6 @@ async function runSyncAndFetchItems(searchArea: string): Promise<RawListing[]> {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       searchUrls: [{ url: zillowUrl }],
-      maxItems: 150,
       extractionMethod: "MAP_MARKERS",
     }),
   });
