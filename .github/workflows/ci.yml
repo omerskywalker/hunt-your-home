@@ -39,7 +39,7 @@ jobs:
           NEXT_PUBLIC_APP_URL: https://example.com
           KV_REST_API_URL: https://example.upstash.io
           KV_REST_API_TOKEN: stub
-          OPENAI_API_KEY: stub
+          ANTHROPIC_API_KEY: stub
           RESEND_API_KEY: stub
           APIFY_API_TOKEN: stub
           CRON_SECRET: stub
