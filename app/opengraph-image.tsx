@@ -149,12 +149,19 @@ export default async function Image() {
               </div>
               {[
                 "agent online — watching Frisco, TX",
-                "scanning Zillow 4× daily for new listings",
+                "scanning Zillow 4x daily for new listings",
                 "every match scored by AI (gpt-4o-mini)",
                 "alerts delivered straight to your inbox",
               ].map((line) => (
                 <div key={line} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <span style={{ color: "#39D353", fontSize: 13, fontFamily: "Inter" }}>◆</span>
+                  {/* Inline diamond shape — avoids Satori fetching a fallback font for ◆ */}
+                  <div style={{
+                    width: 7, height: 7,
+                    background: "#39D353",
+                    transform: "rotate(45deg)",
+                    display: "flex",
+                    flexShrink: 0,
+                  }} />
                   <span style={{ color: "#8B949E", fontSize: 13, fontFamily: "Inter" }}>{line}</span>
                 </div>
               ))}
@@ -170,7 +177,7 @@ export default async function Image() {
             {(
               [
                 { label: "🔥 HOT Alerts",     color: "#FF6B35", bg: "rgba(255,107,53,0.1)",  border: "rgba(255,107,53,0.3)" },
-                { label: "✦ AI Scoring",       color: "#39D353", bg: "rgba(57,211,83,0.08)", border: "rgba(57,211,83,0.25)" },
+                { label: "* AI Scoring",       color: "#39D353", bg: "rgba(57,211,83,0.08)", border: "rgba(57,211,83,0.25)" },
                 { label: "⚡ 4× Daily Scans",  color: "#58A6FF", bg: "rgba(88,166,255,0.08)",border: "rgba(88,166,255,0.25)" },
               ] as const
             ).map(({ label, color, bg, border }) => (
