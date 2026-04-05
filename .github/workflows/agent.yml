@@ -23,6 +23,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+      id-token: write
 
     steps:
       - uses: actions/checkout@v4
@@ -50,10 +51,9 @@ jobs:
       - name: Run Claude Code
         uses: anthropics/claude-code-action@beta
         with:
-          prompt: ${{ inputs.prompt }}
+          direct_prompt: ${{ inputs.prompt }}
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           allowed_tools: "Bash,Read,Write,Edit,Glob,Grep"
-          # Give Claude access to run pnpm test and pnpm tsc
           timeout_minutes: "30"
 
       - name: Verify tests pass
