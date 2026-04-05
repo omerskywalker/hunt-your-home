@@ -13,6 +13,7 @@ const KEYS = {
   SEEN_IDS: "hyh:seen-ids",
   ALERT_HISTORY: "hyh:alert-history",
   SCAN_HISTORY: "hyh:scan-history",
+  ROADMAP_OVERRIDES: "hyh:roadmap-overrides",
 } as const;
 
 const MAX_ALERT_HISTORY = 500;
@@ -184,4 +185,26 @@ export async function getBookmarkIds(): Promise<Set<string>> {
   } catch {
     return new Set();
   }
+}
+
+// ── Roadmap overrides (runtime status from kickoff API) ───────────────────
+
+export interface RoadmapOverride {
+  status: "in-progress" | "done" | "paused";
+  pr?: number;
+  startedAt?: string;
+}
+
+export async function getRoadmapOverrides(): Promise<Record<string, RoadmapOverride>> {
+  try {
+    const raw = await kv.get<Record<string, RoadmapOverride>>(KEYS.ROADMAP_OVERRIDES);
+    return raw ?? {};
+  } catch {
+    return {};
+  }
+}
+
+export async function setRoadmapOverride(itemId: string, data: RoadmapOverride): Promise<void> {
+  const current = await getRoadmapOverrides();
+  await kv.set(KEYS.ROADMAP_OVERRIDES, { ...current, [itemId]: data });
 }

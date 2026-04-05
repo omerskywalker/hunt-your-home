@@ -1,0 +1,78 @@
+name: Claude Code Agent
+
+on:
+  workflow_dispatch:
+    inputs:
+      item_id:
+        description: "Roadmap item ID (e.g. 1.1)"
+        required: true
+      branch:
+        description: "Feature branch to work on"
+        required: true
+      pr_number:
+        description: "Draft PR number"
+        required: true
+      prompt:
+        description: "Full task description for Claude"
+        required: true
+
+jobs:
+  agent:
+    name: Implement ${{ inputs.item_id }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Run Claude Code
+        uses: anthropics/claude-code-action@beta
+        with:
+          prompt: ${{ inputs.prompt }}
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          allowed_tools: "Bash,Read,Write,Edit,Glob,Grep"
+          # Give Claude access to run pnpm test and pnpm tsc
+          timeout_minutes: "30"
+
+      - name: Verify tests pass
+        run: pnpm test
+
+      - name: Verify types
+        run: pnpm tsc --noEmit
+
+      - name: Mark PR ready for review
+        if: success()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr ready ${{ inputs.pr_number }}
+          echo "✅ PR #${{ inputs.pr_number }} is ready for review"
+
+      - name: Comment on failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr comment ${{ inputs.pr_number }} --body "⚠️ Agent run failed. Check the [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details."
