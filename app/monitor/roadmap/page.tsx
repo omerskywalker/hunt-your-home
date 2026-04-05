@@ -1,6 +1,7 @@
 import { ROADMAP, REPO, getBatchProgress, getOverallProgress, RoadmapItem, ItemStatus } from "@/lib/roadmap-data";
 import { getRoadmapOverrides, RoadmapOverride } from "@/lib/storage";
 import { KickoffButton } from "./KickoffButton";
+import { InProgressBadge } from "./InProgressBadge";
 
 // Re-fetch on every request so status is always live
 export const dynamic = "force-dynamic";
@@ -166,20 +167,24 @@ function ItemRow({
 
       {/* Bottom row: status pill + PR link + CI badge + tests */}
       <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", paddingLeft: 38 }}>
-        <span
-          style={{
-            fontSize: 11,
-            fontWeight: 600,
-            color: statusColor(effectiveStatus),
-            background: `${statusColor(effectiveStatus)}18`,
-            border: `1px solid ${statusColor(effectiveStatus)}40`,
-            borderRadius: 6,
-            padding: "2px 8px",
-            fontFamily: "var(--font-inter, sans-serif)",
-          }}
-        >
-          {statusLabel(effectiveStatus)}
-        </span>
+        {effectiveStatus === "in-progress" ? (
+          <InProgressBadge />
+        ) : (
+          <span
+            style={{
+              fontSize: 11,
+              fontWeight: 600,
+              color: statusColor(effectiveStatus),
+              background: `${statusColor(effectiveStatus)}18`,
+              border: `1px solid ${statusColor(effectiveStatus)}40`,
+              borderRadius: 6,
+              padding: "2px 8px",
+              fontFamily: "var(--font-inter, sans-serif)",
+            }}
+          >
+            {statusLabel(effectiveStatus)}
+          </span>
+        )}
 
         <KickoffButton itemId={item.id} disabled={effectiveStatus !== "not-started"} />
 
