@@ -23,7 +23,7 @@ export async function sendHotAlert(
       react: AlertEmailTemplate({ listing, tier: "HOT" }),
     });
     if (error) {
-      console.error("Resend HOT alert error:", error);
+      console.error("HOT alert email failed:", JSON.stringify(error));
       return false;
     }
     return true;
@@ -52,11 +52,12 @@ export async function sendMatchDigest(
         })
       )
     );
-    const hasError = results.some((r) => r.error);
-    if (hasError) {
-      console.error("Some match digest emails failed");
+    const failed = results.filter((r) => r.error);
+    if (failed.length > 0) {
+      console.error(`Match digest: ${failed.length}/${results.length} emails failed:`);
+      failed.forEach((r) => console.error(" -", JSON.stringify(r.error)));
     }
-    return !hasError;
+    return failed.length === 0;
   } catch (err) {
     console.error("sendMatchDigest failed:", err);
     return false;
