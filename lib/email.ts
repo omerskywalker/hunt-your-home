@@ -40,24 +40,27 @@ export async function sendMatchDigest(
   if (listings.length === 0) return true;
 
   try {
-    // Send individual emails for each MATCH listing
     const resend = getResend();
-    const results = await Promise.all(
-      listings.map((listing) =>
-        resend.emails.send({
-          from: FROM,
-          to,
-          subject: `✦ NEW MATCH: ${listing.address} — $${listing.price.toLocaleString()}`,
-          react: AlertEmailTemplate({ listing, tier: "MATCH" }),
-        })
-      )
-    );
-    const failed = results.filter((r) => r.error);
-    if (failed.length > 0) {
-      console.error(`Match digest: ${failed.length}/${results.length} emails failed:`);
-      failed.forEach((r) => console.error(" -", JSON.stringify(r.error)));
+    let allOk = true;
+
+    // Send sequentially — Resend's free plan caps at 5 req/sec.
+    // Promise.all across 7+ listings reliably hits the rate limit.
+    for (const listing of listings) {
+      const { error } = await resend.emails.send({
+        from: FROM,
+        to,
+        subject: `New Match: ${listing.address} — $${listing.price.toLocaleString()}`,
+        react: AlertEmailTemplate({ listing, tier: "MATCH" }),
+      });
+      if (error) {
+        console.error("Match email failed:", JSON.stringify(error));
+        allOk = false;
+      }
+      // Brief pause to stay under rate limit
+      await new Promise((r) => setTimeout(r, 250));
     }
-    return failed.length === 0;
+
+    return allOk;
   } catch (err) {
     console.error("sendMatchDigest failed:", err);
     return false;
