@@ -24,6 +24,23 @@ async function ghFetch(path: string, options: RequestInit = {}) {
   });
 }
 
+async function fetchContextFiles(files: string[]): Promise<string> {
+  const results = await Promise.allSettled(
+    files.map(async (filePath) => {
+      const res = await ghFetch(`/contents/${filePath}`);
+      if (!res.ok) return null;
+      const data = await res.json() as { content: string };
+      const decoded = Buffer.from(data.content, "base64").toString("utf-8");
+      const lang = filePath.endsWith(".tsx") ? "tsx" : filePath.endsWith(".ts") ? "ts" : filePath.endsWith(".json") ? "json" : "";
+      return `### ${filePath}\n\`\`\`${lang}\n${decoded}\n\`\`\``;
+    })
+  );
+  return results
+    .filter((r): r is PromiseFulfilledResult<string> => r.status === "fulfilled" && r.value !== null)
+    .map((r) => r.value)
+    .join("\n\n");
+}
+
 export async function POST(request: NextRequest) {
   if (!(await isAuthorized())) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
@@ -39,7 +56,13 @@ export async function POST(request: NextRequest) {
   }
 
   const branch = getBranchName(item);
-  const prompt = buildAgentPrompt(item);
+
+  // Fetch context files from GitHub and embed in the prompt so the agent
+  // doesn't waste turns discovering the codebase
+  const injectedContext = item.contextFiles?.length
+    ? await fetchContextFiles(item.contextFiles)
+    : undefined;
+  const prompt = buildAgentPrompt(item, injectedContext);
 
   // 1. Get main SHA
   const refRes = await ghFetch("/git/ref/heads/main");
@@ -53,15 +76,17 @@ export async function POST(request: NextRequest) {
     body: JSON.stringify({ ref: `refs/heads/${branch}`, sha: mainSha }),
   });
   if (!branchRes.ok && branchRes.status !== 422) {
-    // 422 = branch already exists, that's fine
     throw new Error("Failed to create branch");
   }
 
   // 3. Push an initial commit so the branch is ahead of main
-  //    GitHub rejects PRs where head === base SHA (no commits between them)
   const taskContent = Buffer.from(
     `# Agent Task: ${item.title}\n\n${item.description}\n\n## Test requirements\n${item.testRequirements}\n`
   ).toString("base64");
+
+  // If .agent-task already exists on the branch, get its SHA first
+  const existingRes = await ghFetch(`/contents/.agent-task?ref=${branch}`);
+  const existingData = existingRes.ok ? await existingRes.json() as { sha: string } : null;
 
   await ghFetch(`/contents/.agent-task`, {
     method: "PUT",
@@ -69,11 +94,12 @@ export async function POST(request: NextRequest) {
       message: `chore: init task branch for ${item.id} -- ${item.title}`,
       content: taskContent,
       branch,
+      ...(existingData ? { sha: existingData.sha } : {}),
     }),
   });
 
   // 4. Create draft PR
-  const prBody = `## Roadmap item\nCloses #${item.issue ?? ""}\n\n## What changed\n_Implemented by Claude Code agent — see workflow run for details._\n\n## Test plan\n- [ ] Tests written and passing (\`pnpm test\`)\n- [ ] Type-check clean (\`pnpm tsc --noEmit\`)\n- [ ] CI pipeline green\n- [ ] \`lib/roadmap-data.ts\` updated with PR number and status\n- [ ] Manually verified on production after merge`;
+  const prBody = `## Roadmap item\nCloses #${item.issue ?? ""}\n\n## What changed\n_Implemented by Claude Code agent — see workflow run for details._\n\n## Test plan\n- [ ] Tests written and passing (\`pnpm test\`)\n- [ ] Type-check clean (\`pnpm tsc --noEmit\`)\n- [ ] CI pipeline green\n- [ ] Manually verified on production after merge`;
 
   const prRes = await ghFetch("/pulls", {
     method: "POST",
@@ -85,13 +111,24 @@ export async function POST(request: NextRequest) {
       draft: true,
     }),
   });
-  if (!prRes.ok) {
-    const err = await prRes.json() as { message?: string };
-    throw new Error(`Failed to create PR: ${err.message ?? prRes.status}`);
-  }
-  const pr = await prRes.json() as { number: number; html_url: string };
 
-  // 5. Trigger workflow_dispatch on agent.yml
+  let pr: { number: number; html_url: string };
+  if (!prRes.ok) {
+    if (prRes.status === 422) {
+      // PR already exists — find it
+      const listRes = await ghFetch(`/pulls?head=omerskywalker:${branch}&state=open`);
+      const list = listRes.ok ? await listRes.json() as Array<{ number: number; html_url: string }> : [];
+      if (!list.length) throw new Error("Failed to create or find PR");
+      pr = list[0];
+    } else {
+      const err = await prRes.json() as { message?: string };
+      throw new Error(`Failed to create PR: ${err.message ?? prRes.status}`);
+    }
+  } else {
+    pr = await prRes.json() as { number: number; html_url: string };
+  }
+
+  // 5. Trigger workflow_dispatch on agent.yml (always from main ref)
   const dispatchRes = await ghFetch("/actions/workflows/agent.yml/dispatches", {
     method: "POST",
     body: JSON.stringify({
@@ -104,10 +141,8 @@ export async function POST(request: NextRequest) {
       },
     }),
   });
-  // 204 = success, 422 = workflow not found on that ref yet (first push)
   if (!dispatchRes.ok && dispatchRes.status !== 422) {
     console.error("Workflow dispatch failed:", dispatchRes.status);
-    // Non-fatal — branch and PR were created, user can trigger manually
   }
 
   // 6. Store override in KV

@@ -24,6 +24,23 @@ async function ghFetch(path: string, options: RequestInit = {}) {
   });
 }
 
+async function fetchContextFiles(files: string[]): Promise<string> {
+  const results = await Promise.allSettled(
+    files.map(async (filePath) => {
+      const res = await ghFetch(`/contents/${filePath}`);
+      if (!res.ok) return null;
+      const data = await res.json() as { content: string };
+      const decoded = Buffer.from(data.content, "base64").toString("utf-8");
+      const lang = filePath.endsWith(".tsx") ? "tsx" : filePath.endsWith(".ts") ? "ts" : filePath.endsWith(".json") ? "json" : "";
+      return `### ${filePath}\n\`\`\`${lang}\n${decoded}\n\`\`\``;
+    })
+  );
+  return results
+    .filter((r): r is PromiseFulfilledResult<string> => r.status === "fulfilled" && r.value !== null)
+    .map((r) => r.value)
+    .join("\n\n");
+}
+
 export async function POST(request: NextRequest) {
   if (!(await isAuthorized())) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
@@ -43,7 +60,12 @@ export async function POST(request: NextRequest) {
   }
 
   const branch = getBranchName(item);
-  const prompt = buildAgentPrompt(item);
+
+  // Re-fetch context files fresh — codebase may have changed since first kickoff
+  const injectedContext = item.contextFiles?.length
+    ? await fetchContextFiles(item.contextFiles)
+    : undefined;
+  const prompt = buildAgentPrompt(item, injectedContext);
 
   const dispatchRes = await ghFetch("/actions/workflows/agent.yml/dispatches", {
     method: "POST",
