@@ -1,13 +1,15 @@
+import { after } from "next/server";
 import { runScrapePipeline } from "@/lib/scrape-pipeline";
 
 // No cron secret required — intended for manual UI-triggered scans.
 export async function POST() {
-  // Fire and forget — kick off the pipeline without blocking the response.
-  // The scan can take 60-120s; holding the HTTP connection that long causes
-  // browser timeouts and a poor UX. Results are stored in KV and visible
-  // on next page load.
-  void runScrapePipeline().catch((err) => {
-    console.error("Scan-now pipeline error:", err);
+  // after() keeps the serverless function alive until the callback completes
+  // even after the response has been sent. Without it, Vercel cuts the function
+  // as soon as the response is returned, killing the pipeline mid-run.
+  after(async () => {
+    await runScrapePipeline().catch((err) => {
+      console.error("Scan-now pipeline error:", err);
+    });
   });
 
   return Response.json({ success: true, started: true }, { status: 202 });
