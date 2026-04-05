@@ -28,9 +28,6 @@ function ListingCard({ listing }: { listing: AIScoredListing }) {
     listing.pricePerSqft ??
     (listing.sqft > 0 ? Math.round(listing.price / listing.sqft) : null);
 
-  const scoreColor =
-    listing.aiScore >= 8 ? "#39D353" : listing.aiScore >= 6 ? "#58A6FF" : "#484F58";
-
   return (
     <Section style={cardStyles.card}>
       {/* Photo */}
@@ -42,16 +39,11 @@ function ListingCard({ listing }: { listing: AIScoredListing }) {
         style={cardStyles.photo}
       />
 
-      {/* Score badge overlay row */}
+      {/* Address & price */}
       <Row style={{ padding: "16px 24px 0" }}>
         <Column>
           <Heading style={cardStyles.address}>{listing.address}</Heading>
           <Text style={cardStyles.price}>${listing.price.toLocaleString()}</Text>
-        </Column>
-        <Column align="right" style={{ verticalAlign: "top", paddingTop: 4 }}>
-          <Text style={{ ...cardStyles.scoreBadge, color: scoreColor, borderColor: scoreColor }}>
-            AI {listing.aiScore}/10
-          </Text>
         </Column>
       </Row>
 
@@ -105,8 +97,21 @@ export function DigestEmailTemplate({ listings }: DigestEmailTemplateProps) {
           {/* Header */}
           <Section style={styles.header}>
             <Row>
-              <Column>
-                <Text style={styles.logo}>HYH</Text>
+              <Column style={{ verticalAlign: "middle" }}>
+                <Row>
+                  <Column style={{ width: 36, verticalAlign: "middle" }}>
+                    <div style={styles.iconBox}>
+                      <span style={styles.iconLetter}>H</span>
+                    </div>
+                  </Column>
+                  <Column style={{ verticalAlign: "middle", paddingLeft: 10 }}>
+                    <Text style={styles.logo}>
+                      <span style={{ color: "#8B949E" }}>Hunt</span>
+                      <span style={{ color: "#E6EDF3", fontWeight: 700 }}>Your</span>
+                      <span style={{ color: "#39D353", fontWeight: 700 }}>Home</span>
+                    </Text>
+                  </Column>
+                </Row>
               </Column>
               <Column align="right">
                 <Text style={styles.badge}>
@@ -160,7 +165,7 @@ export function DigestEmailTemplate({ listings }: DigestEmailTemplateProps) {
 
 const styles: Record<string, React.CSSProperties> = {
   body: {
-    backgroundColor: "#0f0f0f",
+    backgroundColor: "#080E0A",
     fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
     margin: 0,
     padding: "20px 0",
@@ -168,22 +173,37 @@ const styles: Record<string, React.CSSProperties> = {
   container: {
     maxWidth: "600px",
     margin: "0 auto",
-    backgroundColor: "#18181b",
+    backgroundColor: "#141C16",
     borderRadius: "12px",
     overflow: "hidden",
-    border: "1px solid #27272a",
+    border: "1px solid #21262D",
   },
   header: {
-    backgroundColor: "#0f0f0f",
+    backgroundColor: "#0D1510",
     padding: "24px 32px 16px",
-    borderBottom: "1px solid #27272a",
+    borderBottom: "1px solid #21262D",
+  },
+  iconBox: {
+    display: "inline-block",
+    width: 32,
+    height: 32,
+    backgroundColor: "#39D353",
+    borderRadius: 7,
+    textAlign: "center" as const,
+    lineHeight: "32px",
+  },
+  iconLetter: {
+    color: "#080E0A",
+    fontSize: 16,
+    fontWeight: 800,
+    lineHeight: "32px",
   },
   logo: {
-    fontSize: "24px",
+    fontSize: "20px",
     fontWeight: "700",
-    color: "#39D353",
+    color: "#E6EDF3",
     margin: 0,
-    letterSpacing: "-0.5px",
+    letterSpacing: "-0.3px",
   },
   badge: {
     display: "inline-block",
@@ -191,23 +211,23 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: "999px",
     fontSize: "12px",
     fontWeight: "600",
-    color: "#ffffff",
-    backgroundColor: "#58A6FF",
+    color: "#080E0A",
+    backgroundColor: "#39D353",
     margin: 0,
   },
   subtitle: {
-    color: "#71717a",
+    color: "#484F58",
     fontSize: "13px",
     margin: "8px 0 0",
   },
   divider: {
-    borderColor: "#27272a",
+    borderColor: "#21262D",
     margin: "0 32px",
   },
   footer: {
-    backgroundColor: "#0f0f0f",
+    backgroundColor: "#0D1510",
     padding: "24px 32px",
-    borderTop: "1px solid #27272a",
+    borderTop: "1px solid #21262D",
     textAlign: "center" as const,
   },
   dashboardButton: {
@@ -223,13 +243,13 @@ const styles: Record<string, React.CSSProperties> = {
     marginBottom: "16px",
   },
   footerText: {
-    color: "#52525b",
+    color: "#8B949E",
     fontSize: "13px",
     fontWeight: "500",
     margin: "0 0 8px",
   },
   footerMuted: {
-    color: "#3f3f46",
+    color: "#484F58",
     fontSize: "11px",
     lineHeight: "1.5",
     margin: 0,
@@ -247,7 +267,7 @@ const cardStyles: Record<string, React.CSSProperties> = {
     display: "block",
   },
   address: {
-    color: "#f4f4f5",
+    color: "#E6EDF3",
     fontSize: "16px",
     fontWeight: "600",
     margin: "0 0 4px",
@@ -257,48 +277,40 @@ const cardStyles: Record<string, React.CSSProperties> = {
     color: "#E6EDF3",
     fontSize: "26px",
     fontWeight: "900",
+    fontFamily: "'Space Grotesk', Inter, sans-serif",
     margin: 0,
     letterSpacing: "-0.03em",
-  },
-  scoreBadge: {
-    display: "inline-block",
-    padding: "4px 10px",
-    borderRadius: "6px",
-    fontSize: "13px",
-    fontWeight: "700",
-    border: "1px solid",
-    margin: 0,
-    backgroundColor: "transparent",
   },
   statBox: {
     textAlign: "center" as const,
     padding: "0 8px",
   },
   statLabel: {
-    color: "#71717a",
+    color: "#484F58",
     fontSize: "10px",
     textTransform: "uppercase" as const,
-    letterSpacing: "0.05em",
+    letterSpacing: "0.1em",
+    fontWeight: "600",
     margin: "0 0 2px",
   },
   statValue: {
-    color: "#f4f4f5",
+    color: "#E6EDF3",
     fontSize: "16px",
-    fontWeight: "600",
+    fontWeight: "700",
     margin: 0,
   },
   highlight: {
-    color: "#4ade80",
+    color: "#39D353",
     fontSize: "12px",
     margin: "0 0 3px",
   },
   ctaButton: {
-    backgroundColor: "#006AFF",
-    color: "#ffffff",
+    backgroundColor: "#39D353",
+    color: "#080E0A",
     padding: "10px 28px",
     borderRadius: "8px",
     fontSize: "14px",
-    fontWeight: "600",
+    fontWeight: "700",
     textDecoration: "none",
     display: "inline-block",
   },
