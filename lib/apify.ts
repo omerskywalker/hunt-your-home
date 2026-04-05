@@ -226,8 +226,8 @@ async function runSyncAndFetchItems(searchArea: string): Promise<RawListing[]> {
   );
   url.searchParams.set("token", token);
   url.searchParams.set("clean", "true");
-  url.searchParams.set("limit", "200");
-  url.searchParams.set("waitSecs", "280");
+  url.searchParams.set("limit", "150");   // cap dataset items returned
+  url.searchParams.set("waitSecs", "120"); // MAP_MARKERS finishes in <60s
 
   const zillowUrl = toZillowUrl(searchArea);
   console.log("Apify: scraping", zillowUrl);
@@ -237,7 +237,7 @@ async function runSyncAndFetchItems(searchArea: string): Promise<RawListing[]> {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       searchUrls: [{ url: zillowUrl }],
-      maxItems: 100,
+      maxItems: 150,
       extractionMethod: "MAP_MARKERS",
     }),
   });

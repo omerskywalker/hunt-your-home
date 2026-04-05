@@ -44,7 +44,9 @@ export async function runScrapePipeline(): Promise<ScanRecord> {
     const unseen = allListings.filter((l) => !seenIds.has(l.id));
     newListings = unseen.length;
 
-    const filtered = unseen.filter((l) => matchesHardFilters(l, prefs));
+    // Cap at 40 per run — prevents runaway AI costs on first run when seenIds is empty.
+    // Listings are already sorted newest-first by Zillow (sort=days).
+    const filtered = unseen.filter((l) => matchesHardFilters(l, prefs)).slice(0, 40);
 
     if (unseen.length > 0) {
       await addSeenIds(unseen.map((l) => l.id));

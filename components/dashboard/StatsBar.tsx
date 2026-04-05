@@ -119,13 +119,13 @@ export function StatsBar({
     toast("Scan started...", { description: "Checking Zillow for new listings" });
     try {
       const res = await fetch("/api/scan-now", { method: "POST" });
-      const json = await res.json() as { success: boolean; data?: ScanRecord; error?: string };
-      if (json.success && json.data) {
-        toast.success(
-          `Scan complete: ${json.data.matchedListings} new match${json.data.matchedListings !== 1 ? "es" : ""}`,
-          { description: `Found ${json.data.listingsFound} listings, ${json.data.newListings} new` }
-        );
-        onScanComplete?.();
+      const json = await res.json() as { success: boolean; started?: boolean; error?: string };
+      if (json.success) {
+        toast.success("Scan running in background", {
+          description: "Results will appear in your history in ~1 minute",
+        });
+        // Refresh stats after a delay to pick up the scan record once it lands in KV
+        setTimeout(() => onScanComplete?.(), 90_000);
       } else {
         toast.error("Scan failed", { description: json.error ?? "Unknown error" });
       }
