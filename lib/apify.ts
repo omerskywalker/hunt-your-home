@@ -191,9 +191,17 @@ function toZillowUrl(searchArea: string): string {
     .replace(/\s+/g, "-")
     .replace(/[^a-z0-9-]/g, "");
 
+  // mapBounds are required — Zillow returns 0 results without them.
+  // These bounds cover Frisco TX (zip codes 75033/75034/75035).
   const searchQueryState = JSON.stringify({
     pagination: {},
     isMapVisible: true,
+    mapBounds: {
+      west: -96.9697,
+      east: -96.6729,
+      south: 33.0901,
+      north: 33.2259,
+    },
     filterState: {
       sort: { value: "days" },
       ah: { value: true },
@@ -230,7 +238,7 @@ async function runSyncAndFetchItems(searchArea: string): Promise<RawListing[]> {
     body: JSON.stringify({
       searchUrls: [{ url: zillowUrl }],
       maxItems: 100,
-      extractionMethod: "PAGINATION_WITH_ZOOM_IN",
+      extractionMethod: "MAP_MARKERS",
     }),
   });
 
