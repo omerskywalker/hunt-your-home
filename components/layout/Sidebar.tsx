@@ -17,10 +17,12 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside
-      className="hidden lg:flex flex-col w-[220px] min-h-screen fixed left-0 top-0 z-30"
-      style={{ background: "#0D1510", borderRight: "1px solid #21262D" }}
-    >
+    <>
+      {/* Desktop sidebar */}
+      <aside
+        className="hidden lg:flex flex-col w-[220px] min-h-screen fixed left-0 top-0 z-30"
+        style={{ background: "#0D1510", borderRight: "1px solid #21262D" }}
+      >
       {/* Logo */}
       <div
         className="flex items-center gap-2.5 px-4"
@@ -104,24 +106,82 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Status pill */}
-      <div className="px-4 py-5">
-        <div
-          className="inline-flex items-center gap-2 rounded-full px-3 py-1"
-          style={{ background: "#141C16" }}
-        >
-          <span
-            className="w-1.5 h-1.5 rounded-full animate-pulse"
-            style={{ background: "#39D353", boxShadow: "0 0 4px #39D353" }}
-          />
-          <span
-            className="text-[11px]"
-            style={{ color: "#8B949E", fontFamily: "var(--font-inter, sans-serif)" }}
+        {/* Status pill */}
+        <div className="px-4 py-5">
+          <div
+            className="inline-flex items-center gap-2 rounded-full px-3 py-1"
+            style={{ background: "#141C16" }}
           >
-            agent active
-          </span>
+            <span
+              className="w-1.5 h-1.5 rounded-full animate-pulse"
+              style={{ background: "#39D353", boxShadow: "0 0 4px #39D353" }}
+            />
+            <span
+              className="text-[11px]"
+              style={{ color: "#8B949E", fontFamily: "var(--font-inter, sans-serif)" }}
+            >
+              agent active
+            </span>
+          </div>
         </div>
-      </div>
-    </aside>
+      </aside>
+
+      {/* Mobile bottom navigation */}
+      <nav
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-30"
+        style={{ background: "#0D1510", borderTop: "1px solid #21262D" }}
+      >
+        <div className="flex items-center justify-around px-2 py-2">
+          {navItems.map((item, i) => {
+            const active = pathname === item.href;
+            return (
+              <motion.div
+                key={item.label}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.035, duration: 0.2 }}
+                className="flex-1"
+              >
+                <Link
+                  href={item.href}
+                  className="flex flex-col items-center gap-1 py-2 px-1 rounded-lg text-center transition-colors duration-150 min-h-[48px] justify-center"
+                  style={{
+                    color: active ? "#E6EDF3" : "#8B949E",
+                    background: active ? "rgba(57,211,83,0.1)" : "transparent",
+                  }}
+                  onTouchStart={(e) => {
+                    if (!active) {
+                      (e.currentTarget as HTMLAnchorElement).style.background = "rgba(28,36,48,0.5)";
+                      (e.currentTarget as HTMLAnchorElement).style.color = "#E6EDF3";
+                    }
+                  }}
+                  onTouchEnd={(e) => {
+                    if (!active) {
+                      (e.currentTarget as HTMLAnchorElement).style.background = "transparent";
+                      (e.currentTarget as HTMLAnchorElement).style.color = "#8B949E";
+                    }
+                  }}
+                >
+                  <item.icon
+                    size={18}
+                    style={{ color: active ? "#39D353" : "#484F58" }}
+                  />
+                  <span 
+                    style={{ 
+                      fontFamily: "var(--font-inter, sans-serif)", 
+                      fontSize: 10,
+                      fontWeight: active ? 600 : 400,
+                      lineHeight: 1.2
+                    }}
+                  >
+                    {item.label === "Scan History" ? "History" : item.label}
+                  </span>
+                </Link>
+              </motion.div>
+            );
+          })}
+        </div>
+      </nav>
+    </>
   );
 }

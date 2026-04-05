@@ -345,9 +345,9 @@ export function StatsBar({
       style={{ background: "#0D1510", borderBottom: "1px solid #21262D" }}
     >
       {/* Title row */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-2 mb-4">
         <h1
-          className="text-2xl font-semibold"
+          className="text-xl sm:text-2xl font-semibold"
           style={{ fontFamily: "var(--font-space-grotesk, sans-serif)" }}
         >
           <span style={{ color: "#8B949E" }}>Hunt</span>
@@ -355,7 +355,7 @@ export function StatsBar({
           <span style={{ color: "#39D353" }}>Home</span>
         </h1>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 justify-start sm:justify-end">
           {process.env.NEXT_PUBLIC_ENABLE_MOCK === "true" && onToggleMock && (
             <button
               onClick={onToggleMock}
@@ -443,7 +443,7 @@ export function StatsBar({
       </AnimatePresence>
 
       {/* Stat cards */}
-      <div className="flex flex-wrap gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard icon={Scan}     label="Scans Today"    value={todayScans}               isActive={todayScans > 0}    delay={0}    />
         <StatCard icon={Bell}     label="New Matches"    value={recentMatches}             isActive={recentMatches > 0} delay={0.07} />
         <StatCard icon={Clock}    label="Last Scan"      value={lastScanValue}             isActive={!lastScanIsNever}  italic={lastScanIsNever} delay={0.14} />
