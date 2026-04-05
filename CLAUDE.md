@@ -3,7 +3,7 @@
 # HuntYourHome — Agent Context
 
 ## What this app does
-AI-powered Zillow monitoring for Frisco, TX. Scrapes Zillow via Apify 4× daily, scores each new listing with GPT-4o-mini, and emails matching listings to a configured address. Single-user personal tool — no auth, no multi-tenancy.
+AI-powered Zillow monitoring for Frisco, TX. Scrapes Zillow via Apify 4x daily, scores each new listing with Claude Haiku, and emails matching listings to a configured address. Single-user personal tool — no auth, no multi-tenancy.
 
 ---
 
@@ -13,14 +13,14 @@ AI-powered Zillow monitoring for Frisco, TX. Scrapes Zillow via Apify 4× daily,
 ```
 Vercel Cron → POST /api/scrape (CRON_SECRET required)
 Browser "Scan Now" → POST /api/scan-now (no auth — personal tool)
-Both → lib/scrape-pipeline.ts → Apify → GPT-4o-mini → Resend email → Upstash KV
+Both → lib/scrape-pipeline.ts → Apify → Claude Haiku → Resend email → Upstash KV
 ```
 
 ### Key source files
 | File | Purpose |
 |------|---------|
 | `lib/scrape-pipeline.ts` | Full scan pipeline — Apify → dedup → filter → AI score → email → KV |
-| `lib/scorer.ts` | OpenAI GPT-4o-mini scoring. Returns `aiScore` (1–10), `alertTier`, `aiHighlights`, `aiConcerns`, `aiReason` |
+| `lib/scorer.ts` | Anthropic Claude Haiku scoring. Returns `aiScore` (1–10), `alertTier`, `aiHighlights`, `aiConcerns`, `aiReason` |
 | `lib/storage.ts` | All Upstash KV reads/writes. Single source of truth for KV key names |
 | `lib/filters.ts` | Hard filter logic (`matchesHardFilters`) — runs before AI to save tokens |
 | `lib/types.ts` | All shared types. `UserPreferences`, `AIScoredListing`, `AlertRecord`, `ScanRecord`, `BookmarkedListing` |
@@ -120,7 +120,7 @@ Vercel auto-deploys `main` on push. No manual deploy steps needed. Preview deplo
 | Var | Where set | Purpose |
 |-----|-----------|---------|
 | `APIFY_API_TOKEN` | Vercel | Zillow scraper actor auth |
-| `OPENAI_API_KEY` | Vercel | GPT-4o-mini scoring |
+| `ANTHROPIC_API_KEY` | Vercel | Claude Haiku scoring |
 | `RESEND_API_KEY` | Vercel | Email sending |
 | `KV_REST_API_URL` | Vercel (auto) | Upstash Redis REST URL |
 | `KV_REST_API_TOKEN` | Vercel (auto) | Upstash Redis REST token |

@@ -1,20 +1,25 @@
 import { ImageResponse } from "next/og";
 
-export const runtime = "edge";
+// Node.js runtime — avoids edge Buffer polyfill issues and is more reliable
+// for external image/font fetches at build/request time.
+export const runtime = "nodejs";
 export const alt = "HuntYourHome — AI-powered home alerts for Frisco, TX";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 export default async function Image() {
-  const [interRegular, interBold, spaceGroteskBold, houseImg] = await Promise.all([
+  const [interRegular, interBold, spaceGroteskBold, houseImgResult] = await Promise.all([
     fetch("https://cdn.jsdelivr.net/npm/@fontsource/inter@4.5.15/files/inter-latin-400-normal.woff").then((r) => r.arrayBuffer()),
     fetch("https://cdn.jsdelivr.net/npm/@fontsource/inter@4.5.15/files/inter-latin-700-normal.woff").then((r) => r.arrayBuffer()),
     fetch("https://cdn.jsdelivr.net/npm/@fontsource/space-grotesk@4.5.0/files/space-grotesk-latin-700-normal.woff").then((r) => r.arrayBuffer()),
-    fetch("https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=600&q=80").then((r) => r.arrayBuffer()),
+    fetch("https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=600&q=80")
+      .then((r) => (r.ok ? r.arrayBuffer() : null))
+      .catch(() => null),
   ]);
 
-  const houseBase64 = Buffer.from(houseImg).toString("base64");
-  const houseSrc = `data:image/jpeg;base64,${houseBase64}`;
+  const houseSrc = houseImgResult
+    ? `data:image/jpeg;base64,${Buffer.from(houseImgResult).toString("base64")}`
+    : null;
 
   return new ImageResponse(
     (
@@ -68,7 +73,7 @@ export default async function Image() {
           }}
         />
 
-        {/* ── LEFT COLUMN ── */}
+        {/* LEFT COLUMN */}
         <div
           style={{
             display: "flex",
@@ -78,7 +83,7 @@ export default async function Image() {
             height: "100%",
           }}
         >
-          {/* Logo — matches header: Hunt(gray) Your(white) Home(green) */}
+          {/* Logo */}
           <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 36 }}>
             <div
               style={{
@@ -140,7 +145,7 @@ export default async function Image() {
                 <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#FFBD2E", display: "flex" }} />
                 <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#28C840", display: "flex" }} />
               </div>
-              <span style={{ color: "#484F58", fontSize: 12, fontFamily: "Inter", marginLeft: 8 }}>hyh-agent — bash</span>
+              <span style={{ color: "#484F58", fontSize: 12, fontFamily: "Inter", marginLeft: 8 }}>hyh-agent -- bash</span>
             </div>
             {/* Terminal body */}
             <div style={{ display: "flex", flexDirection: "column", padding: "14px 18px", gap: 6 }}>
@@ -148,13 +153,20 @@ export default async function Image() {
                 <span style={{ color: "#39D353", fontSize: 13, fontFamily: "Inter" }}>$ hyh status</span>
               </div>
               {[
-                "agent online — watching Frisco, TX",
-                "scanning Zillow 4× daily for new listings",
-                "every match scored by AI (gpt-4o-mini)",
+                "agent online -- watching Frisco, TX",
+                "scanning Zillow 4x daily for new listings",
+                "every match scored by AI (claude haiku)",
                 "alerts delivered straight to your inbox",
               ].map((line) => (
                 <div key={line} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <span style={{ color: "#39D353", fontSize: 13, fontFamily: "Inter" }}>◆</span>
+                  {/* CSS diamond -- avoids Satori fetching a fallback font for special chars */}
+                  <div style={{
+                    width: 7, height: 7,
+                    background: "#39D353",
+                    transform: "rotate(45deg)",
+                    display: "flex",
+                    flexShrink: 0,
+                  }} />
                   <span style={{ color: "#8B949E", fontSize: 13, fontFamily: "Inter" }}>{line}</span>
                 </div>
               ))}
@@ -169,9 +181,9 @@ export default async function Image() {
           <div style={{ display: "flex", gap: 10 }}>
             {(
               [
-                { label: "🔥 HOT Alerts",     color: "#FF6B35", bg: "rgba(255,107,53,0.1)",  border: "rgba(255,107,53,0.3)" },
-                { label: "✦ AI Scoring",       color: "#39D353", bg: "rgba(57,211,83,0.08)", border: "rgba(57,211,83,0.25)" },
-                { label: "⚡ 4× Daily Scans",  color: "#58A6FF", bg: "rgba(88,166,255,0.08)",border: "rgba(88,166,255,0.25)" },
+                { label: "HOT Alerts",    color: "#FF6B35", bg: "rgba(255,107,53,0.1)",   border: "rgba(255,107,53,0.3)"  },
+                { label: "AI Scoring",    color: "#39D353", bg: "rgba(57,211,83,0.08)",   border: "rgba(57,211,83,0.25)" },
+                { label: "4x Daily Scans", color: "#58A6FF", bg: "rgba(88,166,255,0.08)", border: "rgba(88,166,255,0.25)" },
               ] as const
             ).map(({ label, color, bg, border }) => (
               <div
@@ -195,7 +207,7 @@ export default async function Image() {
           </div>
         </div>
 
-        {/* ── RIGHT COLUMN: listing card ── */}
+        {/* RIGHT COLUMN: listing card */}
         <div
           style={{
             position: "absolute",
@@ -219,16 +231,42 @@ export default async function Image() {
               display: "flex",
               position: "relative",
               overflow: "hidden",
+              background: "#0D1117",
             }}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={houseSrc}
-              alt="house"
-              width={440}
-              height={220}
-              style={{ objectFit: "cover", width: "100%", height: "100%" }}
-            />
+            {houseSrc ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={houseSrc}
+                alt="house"
+                width={440}
+                height={220}
+                style={{ objectFit: "cover", width: "100%", height: "100%" }}
+              />
+            ) : (
+              /* Fallback gradient when image fetch fails */
+              <div style={{
+                width: "100%",
+                height: "100%",
+                background: "linear-gradient(135deg, #141C16 0%, #0D1510 50%, #0A1A0C 100%)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}>
+                <div style={{
+                  width: 64,
+                  height: 64,
+                  background: "rgba(57,211,83,0.1)",
+                  border: "1px solid rgba(57,211,83,0.2)",
+                  borderRadius: 12,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}>
+                  <span style={{ fontSize: 32, fontFamily: "Inter" }}>H</span>
+                </div>
+              </div>
+            )}
             {/* Dark overlay gradient at bottom */}
             <div
               style={{
@@ -258,7 +296,7 @@ export default async function Image() {
                 fontFamily: "Inter",
               }}
             >
-              🔥 HOT
+              HOT
             </div>
             {/* AI score badge */}
             <div
@@ -325,7 +363,7 @@ export default async function Image() {
               <span style={{ fontSize: 11, fontWeight: 700, color: "#39D353", fontFamily: "Inter", letterSpacing: "0.05em" }}>
                 AI HIGHLIGHTS
               </span>
-              {["3-car garage — rare under $600k", "$237/sqft — 12% below median"].map((h) => (
+              {["3-car garage -- rare under $600k", "$237/sqft -- 12% below median"].map((h) => (
                 <div key={h} style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <div style={{ width: 4, height: 4, borderRadius: "50%", background: "#39D353", display: "flex" }} />
                   <span style={{ fontSize: 12, color: "#8B949E", fontFamily: "Inter" }}>{h}</span>
