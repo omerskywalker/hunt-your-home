@@ -149,6 +149,36 @@ Expose the complete AI reasoning text on listing cards (collapsed by default, ex
 
 ---
 
+## Batch 6 — Auth & Multi-Tenancy
+**Priority: High | Branch prefix: `feat/batch-6-*`**
+
+Move from a single-user personal tool to a generic, reusable platform. OAuth gates the app, user preferences are scoped per account, and the search area is fully configurable — removing all Frisco-specific hardcoding.
+
+| # | Item | Status | PR |
+|---|------|--------|----|
+| 6.1 | OAuth Authentication | 🔲 Not Started | — |
+| 6.2 | Per-User Data Isolation | 🔲 Not Started | — |
+| 6.3 | Dynamic City & Boundary Search | 🔲 Not Started | — |
+| 6.4 | Platform Generalization | 🔲 Not Started | — |
+
+### 6.1 OAuth Authentication
+Add NextAuth.js (v5) with Google and GitHub providers. Gate all dashboard pages and API routes behind session middleware. On first login, auto-populate `prefs.alertEmail` from the OAuth provider email. Show user avatar + sign-out in the sidebar header. Store sessions in Upstash KV via `@auth/upstash-redis-adapter`. Protect `/api/scan-now`, `/api/history`, `/api/preferences`, `/api/bookmarks` — return 401 if unauthenticated.
+- **Tests**: Session middleware unit tests; unauthenticated route returns 401; alertEmail auto-population from OAuth profile.
+
+### 6.2 Per-User Data Isolation
+Scope all KV keys by `userId` (from NextAuth session). Change key pattern from `hyh:preferences` → `hyh:u:<userId>:preferences`, `hyh:seen-ids` → `hyh:u:<userId>:seen-ids`, etc. Update `lib/storage.ts` to accept `userId` on every read/write. Each user gets independent scan history, bookmarks, alert history, and seen-ids. Migration: preserve existing global keys as a legacy fallback for the first authenticated user.
+- **Tests**: Key namespacing helper; no cross-user data leakage (mock two userIds); legacy key fallback.
+
+### 6.3 Dynamic City & Boundary Search
+Remove all Frisco TX hardcoding. When `searchArea` changes in Settings, call OpenStreetMap Nominatim (free, no API key required) to resolve the city name to a bounding box (`west/east/south/north`). Store `resolvedBounds` in `UserPreferences`. In `lib/apify.ts`, use `resolvedBounds` instead of the hardcoded Frisco box. Map view (4.4) centers on bounds centroid. Settings UI: city input with a "Resolve bounds" preview step.
+- **Tests**: Nominatim response parsing; bounding box extraction; fallback when geocoding fails; centroid calculation.
+
+### 6.4 Platform Generalization
+Bundle remaining hardcoded assumptions into configurable preferences: (1) configurable scan frequency — `scanFrequency: '2x' | '4x' | '8x'` in prefs; (2) multiple saved searches — `searchAreas: string[]`, each with independent seen-ids and filter criteria (extends 2.4); (3) remove all "Frisco TX" references from UI copy, email templates, and defaults — replace with dynamic `prefs.searchArea`; (4) configurable price/bed/bath defaults to sensible nationwide ranges; (5) white-label app name — `appName` in `UserPreferences`, used in email subjects and header.
+- **Tests**: Scan frequency cron expression mapping; multi-search dedup; dynamic copy resolution from prefs.
+
+---
+
 ## Status Legend
 
 | Symbol | Meaning |
