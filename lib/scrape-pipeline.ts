@@ -11,6 +11,7 @@ import {
   pushScanRecord,
   getBookmarkIds,
   markBookmarkSold,
+  pruneOldSeenIds,
 } from "@/lib/storage";
 import { AlertRecord, ScanRecord } from "@/lib/types";
 
@@ -41,6 +42,7 @@ export async function runScrapePipeline(): Promise<ScanRecord> {
     }
 
     const seenIds = await getSeenIds();
+    await pruneOldSeenIds();
     const unseen = allListings.filter((l) => !seenIds.has(l.id));
     newListings = unseen.length;
 

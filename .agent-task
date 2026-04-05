@@ -1,6 +1,6 @@
-# Agent Task: Rate Limiting on /api/scan-now
+# Agent Task: Seen-IDs TTL Cleanup
 
-Redis counter key hyh:scan-ratelimit:<YYYY-MM-DD> (string, incr). Max 10 manual scans per calendar day. On limit: return HTTP 429 with JSON { success: false, error: 'Rate limit reached', remaining: 0, resetAt: '<ISO date>' }. Implement in app/api/scan-now/route.ts using kv from @vercel/kv. Set TTL of 86400s on the counter key.
+On each scan run in lib/scrape-pipeline.ts, after fetching seenIds, prune any zpid whose associated scan date (stored as hyh:seen-id-ts:<zpid> string key) is older than 90 days. Add addSeenIds to also write hyh:seen-id-ts:<zpid> = ISO date with 90-day TTL. Remove orphaned entries from the set via SREM.
 
 ## Test requirements
-Unit tests for: increment logic, block at limit (returns 429), reset at new day (different date key), remaining count in response.
+Unit tests for: pruning logic with mock timestamps, no-op when all ids are recent, correct SREM calls.

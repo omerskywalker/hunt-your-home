@@ -49,6 +49,14 @@ export async function addSeenIds(ids: string[]): Promise<void> {
   try {
     // @vercel/kv sadd accepts a single member or array via cast
     await (kv.sadd as (key: string, ...members: string[]) => Promise<number>)(KEYS.SEEN_IDS, ...ids);
+    
+    // Store timestamps for each zpid with 90-day TTL
+    const now = new Date().toISOString();
+    const ttlSeconds = 90 * 24 * 60 * 60; // 90 days in seconds
+    
+    for (const id of ids) {
+      await kv.set(`hyh:seen-id-ts:${id}`, now, { ex: ttlSeconds });
+    }
   } catch {
     // non-fatal
   }
@@ -60,6 +68,41 @@ export async function getSeenIdsCount(): Promise<number> {
   } catch {
     return 0;
   }
+}
+
+export async function pruneOldSeenIds(): Promise<string[]> {
+  const removedIds: string[] = [];
+  try {
+    const seenIds = await getSeenIds();
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - 90);
+    
+    for (const zpid of seenIds) {
+      try {
+        const timestampStr = await kv.get<string>(`hyh:seen-id-ts:${zpid}`);
+        if (!timestampStr) {
+          // No timestamp found - remove from set as it's orphaned
+          await kv.srem(KEYS.SEEN_IDS, zpid);
+          removedIds.push(zpid);
+        } else {
+          const scanDate = new Date(timestampStr);
+          if (scanDate < cutoffDate) {
+            // Remove old entry from set
+            await kv.srem(KEYS.SEEN_IDS, zpid);
+            removedIds.push(zpid);
+          }
+        }
+      } catch {
+        // If we can't read timestamp, remove from set
+        await kv.srem(KEYS.SEEN_IDS, zpid);
+        removedIds.push(zpid);
+      }
+    }
+  } catch {
+    // non-fatal
+  }
+  
+  return removedIds;
 }
 
 export async function pushAlertRecord(record: AlertRecord): Promise<void> {
