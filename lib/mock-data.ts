@@ -40,6 +40,7 @@ export const MOCK_ALERTS: AlertRecord[] = [
         "Corner lot with 7,200 sqft — larger than typical",
       ],
       aiConcerns: ["HOA at $125/mo adds ~$1,500/yr to carrying cost"],
+      daysOnMarketPenalty: false,
     },
   },
   {
@@ -77,6 +78,7 @@ export const MOCK_ALERTS: AlertRecord[] = [
         "Updated kitchen & hardwoods — move-in ready, no immediate capex",
       ],
       aiConcerns: [],
+      daysOnMarketPenalty: false,
     },
   },
   {
@@ -116,6 +118,7 @@ export const MOCK_ALERTS: AlertRecord[] = [
       aiConcerns: [
         "12 days on market — worth understanding why it hasn't moved faster",
       ],
+      daysOnMarketPenalty: false,
     },
   },
   {
@@ -156,6 +159,7 @@ export const MOCK_ALERTS: AlertRecord[] = [
         "HOA at $150/mo is on the higher end for this price tier",
         "2014 build — roof and major systems approaching 10-yr mark",
       ],
+      daysOnMarketPenalty: false,
     },
   },
   {
@@ -195,6 +199,7 @@ export const MOCK_ALERTS: AlertRecord[] = [
       aiConcerns: [
         "HOA $200/mo — highest in this batch, verify what's included",
       ],
+      daysOnMarketPenalty: false,
     },
   },
 ];

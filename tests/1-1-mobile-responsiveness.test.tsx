@@ -185,6 +185,7 @@ describe('Mobile Responsiveness', () => {
       pricePerSqft: 250,
       daysOnMarket: 7,
       listingType: 'FOR_SALE' as const,
+      daysOnMarketPenalty: false,
     };
 
     const mockRecord = {

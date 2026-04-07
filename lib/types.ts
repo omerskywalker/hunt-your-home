@@ -24,6 +24,7 @@ export interface AIScoredListing extends ZillowListing {
   aiHighlights: string[];
   aiConcerns: string[];
   alertTier: "HOT" | "MATCH";
+  daysOnMarketPenalty: boolean;
   priceDrop?: {
     amount: number;
     percentage: number;
