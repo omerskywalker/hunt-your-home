@@ -65,3 +65,48 @@ export async function sendMatchDigest(
     return false;
   }
 }
+
+export async function sendHealthAlert(to: string): Promise<boolean> {
+  try {
+    const resend = getResend();
+    const { error } = await resend.emails.send({
+      from: FROM,
+      to,
+      subject: "⚠️ HuntYourHome Alert: Zillow Scraper Health Issue",
+      html: `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h1 style="color: #FF6B35; margin-bottom: 20px;">⚠️ Scraper Health Alert</h1>
+          <p style="color: #333; font-size: 16px; line-height: 1.5;">
+            HuntYourHome has detected a potential issue with the Zillow scraper. 
+            No new listings have been found in the last 2+ scans.
+          </p>
+          <p style="color: #666; font-size: 14px; line-height: 1.5;">
+            This could indicate:
+          </p>
+          <ul style="color: #666; font-size: 14px; line-height: 1.5;">
+            <li>Apify service issues</li>
+            <li>Zillow blocking our scraper</li>
+            <li>Network connectivity problems</li>
+            <li>Configuration changes needed</li>
+          </ul>
+          <p style="color: #333; font-size: 16px; line-height: 1.5;">
+            Please check the application logs and monitoring dashboard for more details.
+          </p>
+          <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+          <p style="color: #999; font-size: 12px;">
+            <span style="color: #8B949E;">Hunt</span><span style="color: #E6EDF3; font-weight: 700;">Your</span><span style="color: #39D353; font-weight: 700;">Home</span> Health Monitoring
+          </p>
+        </div>
+      `,
+    });
+
+    if (error) {
+      console.error("Health alert email failed:", JSON.stringify(error));
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error("sendHealthAlert failed:", err);
+    return false;
+  }
+}

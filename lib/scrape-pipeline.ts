@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from "uuid";
 import { runZillowScraper } from "@/lib/apify";
 import { batchScoreListings } from "@/lib/scorer";
 import { matchesHardFilters } from "@/lib/filters";
-import { sendHotAlert, sendMatchDigest } from "@/lib/email";
+import { sendHotAlert, sendMatchDigest, sendHealthAlert } from "@/lib/email";
 import {
   getPreferences,
   getSeenIds,
@@ -12,6 +12,9 @@ import {
   getBookmarkIds,
   markBookmarkSold,
   pruneOldSeenIds,
+  getZeroScanStreak,
+  incrementZeroScanStreak,
+  resetZeroScanStreak,
 } from "@/lib/storage";
 import { AlertRecord, ScanRecord } from "@/lib/types";
 
@@ -27,6 +30,23 @@ export async function runScrapePipeline(): Promise<ScanRecord> {
     const prefs = await getPreferences();
     const allListings = await runZillowScraper(prefs.searchArea);
     listingsFound = allListings.length;
+
+    // Health monitoring: check for zero listings
+    try {
+      if (listingsFound === 0) {
+        const streak = await incrementZeroScanStreak();
+        if (streak >= 2) {
+          const alertEmail = prefs.alertEmail || process.env.ALERT_EMAIL_TO || "";
+          if (alertEmail) {
+            await sendHealthAlert(alertEmail);
+          }
+        }
+      } else {
+        await resetZeroScanStreak();
+      }
+    } catch {
+      // Health monitoring errors are non-fatal
+    }
 
     // Sold detection for bookmarked listings
     const bookmarkIds = await getBookmarkIds();

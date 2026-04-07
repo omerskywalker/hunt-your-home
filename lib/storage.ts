@@ -14,6 +14,7 @@ const KEYS = {
   ALERT_HISTORY: "hyh:alert-history",
   SCAN_HISTORY: "hyh:scan-history",
   ROADMAP_OVERRIDES: "hyh:roadmap-overrides",
+  ZERO_SCAN_STREAK: "hyh:zero-scan-streak",
 } as const;
 
 const MAX_ALERT_HISTORY = 500;
@@ -303,6 +304,33 @@ export async function incrementScanRateLimit(): Promise<void> {
     if (current === 1) {
       await kv.expire(key, SCAN_RATE_LIMIT_TTL);
     }
+  } catch {
+    // non-fatal
+  }
+}
+
+// ── Zero scan streak (Apify health monitoring) ──────────────────────────────
+
+export async function getZeroScanStreak(): Promise<number> {
+  try {
+    const streak = await kv.get<number>(KEYS.ZERO_SCAN_STREAK);
+    return streak ?? 0;
+  } catch {
+    return 0;
+  }
+}
+
+export async function incrementZeroScanStreak(): Promise<number> {
+  try {
+    return await kv.incr(KEYS.ZERO_SCAN_STREAK);
+  } catch {
+    return 0;
+  }
+}
+
+export async function resetZeroScanStreak(): Promise<void> {
+  try {
+    await kv.set(KEYS.ZERO_SCAN_STREAK, 0);
   } catch {
     // non-fatal
   }
