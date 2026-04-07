@@ -1,6 +1,6 @@
-# Agent Task: Price Drop Alerts
+# Agent Task: Days on Market Scoring Factor
 
-Track price per zpid in KV (hyh:price-history:<zpid> = JSON array of {price, date}). On each scan, compare current price to stored last price. If drop >= 2%, add zpid back to the scoring queue even if already in seen-ids. Add 🔻 badge on listing card showing dollar drop. Store price history with 180-day TTL.
+In lib/scorer.ts, pass daysOnMarket in the prompt context with explicit guidance: under 14 = fresh, 15-45 = normal, 46-90 = investigate, 90+ = red flag. After AI returns score, apply post-processing: if daysOnMarket > 60, cap score at max(aiScore - 1, 1). Add daysOnMarketPenalty: boolean to the returned scored listing.
 
 ## Test requirements
-Unit tests for: drop percentage calculation, 2% threshold boundary, re-queue logic, badge formatting ($15,000 → '$15k').
+Unit tests for: DOM penalty application at >60 days, no penalty at 60 days exactly, score floor at 1, penalty flag in output.
