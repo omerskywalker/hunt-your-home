@@ -15,6 +15,9 @@ import {
   getZeroScanStreak,
   incrementZeroScanStreak,
   resetZeroScanStreak,
+  addPriceEntry,
+  getLastPrice,
+  calculatePriceDropPercentage,
 } from "@/lib/storage";
 import { AlertRecord, ScanRecord } from "@/lib/types";
 
@@ -61,14 +64,35 @@ export async function runScrapePipeline(): Promise<ScanRecord> {
       }
     }
 
+    // Price drop detection and tracking
+    const priceDroppedIds = new Set<string>();
+    for (const listing of allListings.filter((l) => l.listingType === "FOR_SALE")) {
+      // Track price history for all listings
+      await addPriceEntry(listing.id, listing.price);
+      
+      // Check for price drops
+      const lastPrice = await getLastPrice(listing.id);
+      if (lastPrice && lastPrice > listing.price) {
+        const dropPercentage = calculatePriceDropPercentage(listing.price, lastPrice);
+        if (dropPercentage >= 2) {
+          priceDroppedIds.add(listing.id);
+        }
+      }
+    }
+
     const seenIds = await getSeenIds();
     await pruneOldSeenIds();
     const unseen = allListings.filter((l) => !seenIds.has(l.id));
     newListings = unseen.length;
 
+    // Include unseen listings and price-dropped listings for scoring
+    const toScore = allListings.filter((l) => 
+      !seenIds.has(l.id) || priceDroppedIds.has(l.id)
+    );
+
     // Cap at 40 per run — prevents runaway AI costs on first run when seenIds is empty.
     // Listings are already sorted newest-first by Zillow (sort=days).
-    const filtered = unseen.filter((l) => matchesHardFilters(l, prefs)).slice(0, 40);
+    const filtered = toScore.filter((l) => matchesHardFilters(l, prefs)).slice(0, 40);
 
     if (unseen.length > 0) {
       await addSeenIds(unseen.map((l) => l.id));
@@ -89,6 +113,22 @@ export async function runScrapePipeline(): Promise<ScanRecord> {
     }
 
     const scored = await batchScoreListings(filtered, prefs);
+    
+    // Add price drop information to scored listings
+    for (const listing of scored) {
+      if (priceDroppedIds.has(listing.id)) {
+        const lastPrice = await getLastPrice(listing.id);
+        if (lastPrice && lastPrice > listing.price) {
+          const dropAmount = lastPrice - listing.price;
+          const dropPercentage = calculatePriceDropPercentage(listing.price, lastPrice);
+          listing.priceDrop = {
+            amount: dropAmount,
+            percentage: dropPercentage,
+          };
+        }
+      }
+    }
+    
     const aboveThreshold = scored.filter((l) => l.aiScore >= prefs.scoreThreshold);
     matchedListings = aboveThreshold.length;
 
