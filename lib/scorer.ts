@@ -23,7 +23,7 @@ Price: $${listing.price.toLocaleString()}
 Beds: ${listing.beds} | Baths: ${listing.baths}
 Sqft: ${listing.sqft.toLocaleString()} | Price/sqft: $${listing.pricePerSqft ?? Math.round(listing.price / listing.sqft)}/sqft
 Year Built: ${listing.yearBuilt}
-Days on Market: ${listing.daysOnMarket}
+Days on Market: ${listing.daysOnMarket} (under 14 = fresh, 15-45 = normal, 46-90 = investigate, 90+ = red flag)
 HOA: ${listing.hoaMonthly ? `$${listing.hoaMonthly}/mo` : "None"}
 Lot Size: ${listing.lotSizeSqft ? `${listing.lotSizeSqft.toLocaleString()} sqft` : "Unknown"}
 ${listing.description ? `Description: ${listing.description}` : ""}
@@ -85,15 +85,23 @@ export async function batchScoreListings(
     const scored = await Promise.all(
       batch.map(async (listing) => {
         const scoreResult = await scoreListing(listing, prefs);
+        
+        // Apply days on market penalty: if >60 days, cap at max(aiScore - 1, 1)
+        const daysOnMarketPenalty = listing.daysOnMarket > 60;
+        const finalScore = daysOnMarketPenalty 
+          ? Math.max(scoreResult.score - 1, 1)
+          : scoreResult.score;
+        
         const alertTier: "HOT" | "MATCH" =
-          scoreResult.score >= prefs.hotScoreThreshold ? "HOT" : "MATCH";
+          finalScore >= prefs.hotScoreThreshold ? "HOT" : "MATCH";
         return {
           ...listing,
-          aiScore: scoreResult.score,
+          aiScore: finalScore,
           aiReason: scoreResult.reason,
           aiHighlights: scoreResult.highlights,
           aiConcerns: scoreResult.concerns,
           alertTier,
+          daysOnMarketPenalty,
         } satisfies AIScoredListing;
       })
     );
