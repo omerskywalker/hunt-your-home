@@ -1,6 +1,6 @@
-# Agent Task: Apify Health Monitoring
+# Agent Task: Price Drop Alerts
 
-In lib/scrape-pipeline.ts, after fetching listings: if listingsFound === 0, check hyh:zero-scan-streak (integer key, incr). If streak >= 2, send a warning email via sendHealthAlert(alertEmail) in lib/email.ts. On listingsFound > 0, reset streak to 0. Add sendHealthAlert function to lib/email.ts using the existing Resend setup.
+Track price per zpid in KV (hyh:price-history:<zpid> = JSON array of {price, date}). On each scan, compare current price to stored last price. If drop >= 2%, add zpid back to the scoring queue even if already in seen-ids. Add 🔻 badge on listing card showing dollar drop. Store price history with 180-day TTL.
 
 ## Test requirements
-Unit tests for: streak increment, alert trigger at threshold 2, streak reset on successful scan, no alert on first zero.
+Unit tests for: drop percentage calculation, 2% threshold boundary, re-queue logic, badge formatting ($15,000 → '$15k').

@@ -24,6 +24,10 @@ export interface AIScoredListing extends ZillowListing {
   aiHighlights: string[];
   aiConcerns: string[];
   alertTier: "HOT" | "MATCH";
+  priceDrop?: {
+    amount: number;
+    percentage: number;
+  };
 }
 
 export interface UserPreferences {
@@ -62,6 +66,11 @@ export interface BookmarkedListing {
   listing: AIScoredListing;
   savedAt: string;
   sold: boolean;
+}
+
+export interface PriceHistoryEntry {
+  price: number;
+  date: string;
 }
 
 export const DEFAULT_PREFERENCES: UserPreferences = {

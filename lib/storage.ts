@@ -5,6 +5,7 @@ import {
   ScanRecord,
   BookmarkedListing,
   AIScoredListing,
+  PriceHistoryEntry,
   DEFAULT_PREFERENCES,
 } from "./types";
 
@@ -334,4 +335,60 @@ export async function resetZeroScanStreak(): Promise<void> {
   } catch {
     // non-fatal
   }
+}
+
+// ── Price history tracking (180-day TTL) ──────────────────────────────────
+
+function getPriceHistoryKey(zpid: string): string {
+  return `hyh:price-history:${zpid}`;
+}
+
+export async function getPriceHistory(zpid: string): Promise<PriceHistoryEntry[]> {
+  try {
+    const history = await kv.get<PriceHistoryEntry[]>(getPriceHistoryKey(zpid));
+    return history ?? [];
+  } catch {
+    return [];
+  }
+}
+
+export async function addPriceEntry(zpid: string, price: number, date: string = new Date().toISOString()): Promise<void> {
+  try {
+    const key = getPriceHistoryKey(zpid);
+    const history = await getPriceHistory(zpid);
+    const newEntry: PriceHistoryEntry = { price, date };
+    
+    // Check if the most recent entry has the same price to avoid duplicates
+    if (history.length > 0 && history[history.length - 1].price === price) {
+      return;
+    }
+    
+    const updated = [...history, newEntry];
+    const ttlSeconds = 180 * 24 * 60 * 60; // 180 days in seconds
+    
+    await kv.set(key, updated, { ex: ttlSeconds });
+  } catch {
+    // non-fatal
+  }
+}
+
+export async function getLastPrice(zpid: string): Promise<number | null> {
+  try {
+    const history = await getPriceHistory(zpid);
+    return history.length > 0 ? history[history.length - 1].price : null;
+  } catch {
+    return null;
+  }
+}
+
+export function calculatePriceDropPercentage(currentPrice: number, lastPrice: number): number {
+  if (lastPrice <= 0) return 0;
+  return ((lastPrice - currentPrice) / lastPrice) * 100;
+}
+
+export function formatPriceDrop(dropAmount: number): string {
+  if (dropAmount >= 1000) {
+    return `$${Math.round(dropAmount / 1000)}k`;
+  }
+  return `$${Math.round(dropAmount).toLocaleString()}`;
 }

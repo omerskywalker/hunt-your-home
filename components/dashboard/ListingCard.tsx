@@ -5,6 +5,7 @@ import { ExternalLink, Bed, Bath, Maximize2, Calendar, Star } from "lucide-react
 import { formatDistanceToNow } from "date-fns";
 import Image from "next/image";
 import { AlertRecord, AIScoredListing } from "@/lib/types";
+import { formatPriceDrop } from "@/lib/storage";
 
 interface ListingCardProps {
   record: AlertRecord;
@@ -65,6 +66,23 @@ function TierBadge({ tier }: { tier: "HOT" | "MATCH" }) {
       }}
     >
       MATCH
+    </span>
+  );
+}
+
+function PriceDropBadge({ amount }: { amount: number }) {
+  return (
+    <span
+      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider"
+      style={{
+        background: "rgba(8,12,16,0.82)",
+        backdropFilter: "blur(6px)",
+        border: "1px solid rgba(34,197,94,0.55)",
+        color: "#22C55E",
+        fontFamily: "var(--font-inter, sans-serif)",
+      }}
+    >
+      🔻 {formatPriceDrop(amount)}
     </span>
   );
 }
@@ -157,8 +175,11 @@ export function ListingCard({
           </div>
         )}
 
-        <div className="absolute top-2 left-2" style={{ zIndex: 5 }}>
+        <div className="absolute top-2 left-2 flex flex-col gap-1.5" style={{ zIndex: 5 }}>
           <TierBadge tier={listing.alertTier} />
+          {listing.priceDrop && (
+            <PriceDropBadge amount={listing.priceDrop.amount} />
+          )}
         </div>
         <div className="absolute top-2 right-2" style={{ zIndex: 5 }}>
           <ScoreBadge score={listing.aiScore} tier={listing.alertTier} />
