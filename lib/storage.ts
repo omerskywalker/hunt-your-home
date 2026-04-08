@@ -12,6 +12,7 @@ import {
 const KEYS = {
   PREFERENCES: "hyh:preferences",
   SEEN_IDS: "hyh:seen-ids",
+  DISMISSED_IDS: "hyh:dismissed-ids",
   ALERT_HISTORY: "hyh:alert-history",
   SCAN_HISTORY: "hyh:scan-history",
   ROADMAP_OVERRIDES: "hyh:roadmap-overrides",
@@ -105,6 +106,31 @@ export async function pruneOldSeenIds(): Promise<string[]> {
   }
   
   return removedIds;
+}
+
+export async function getDismissedIds(): Promise<Set<string>> {
+  try {
+    const members = await kv.smembers(KEYS.DISMISSED_IDS);
+    return new Set(members as string[]);
+  } catch {
+    return new Set();
+  }
+}
+
+export async function dismissListing(zpid: string): Promise<void> {
+  try {
+    await kv.sadd(KEYS.DISMISSED_IDS, zpid);
+  } catch {
+    // non-fatal
+  }
+}
+
+export async function undismissListing(zpid: string): Promise<void> {
+  try {
+    await kv.srem(KEYS.DISMISSED_IDS, zpid);
+  } catch {
+    // non-fatal
+  }
 }
 
 export async function pushAlertRecord(record: AlertRecord): Promise<void> {

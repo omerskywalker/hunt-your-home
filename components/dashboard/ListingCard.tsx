@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ExternalLink, Bed, Bath, Maximize2, Calendar, Star } from "lucide-react";
+import { ExternalLink, Bed, Bath, Maximize2, Calendar, Star, X } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import Image from "next/image";
 import { AlertRecord, AIScoredListing } from "@/lib/types";
@@ -13,6 +13,9 @@ interface ListingCardProps {
   isBookmarked?: boolean;
   onToggleBookmark?: (listing: AIScoredListing) => void;
   showSoldBanner?: boolean;
+  isDismissed?: boolean;
+  onDismiss?: (zpid: string) => void;
+  onUndismiss?: (zpid: string) => void;
 }
 
 function ScoreBadge({ score, tier }: { score: number; tier: "HOT" | "MATCH" }) {
@@ -93,6 +96,9 @@ export function ListingCard({
   isBookmarked = false,
   onToggleBookmark,
   showSoldBanner = false,
+  isDismissed = false,
+  onDismiss,
+  onUndismiss,
 }: ListingCardProps) {
   const { listing, sentAt } = record;
   const photoUrl = listing.photos?.[0];
@@ -112,7 +118,7 @@ export function ListingCard({
         background: "#141C16",
         border: "1px solid #21262D",
         transition: "border-color 200ms ease, box-shadow 200ms ease, transform 200ms ease",
-        opacity: showSoldBanner ? 0.85 : 1,
+        opacity: showSoldBanner ? 0.85 : isDismissed ? 0.6 : 1,
       }}
       onMouseEnter={(e) => {
         const el = e.currentTarget as HTMLElement;
@@ -175,50 +181,108 @@ export function ListingCard({
           </div>
         )}
 
-        <div className="absolute top-2 left-2 flex flex-col gap-1.5" style={{ zIndex: 5 }}>
-          <TierBadge tier={listing.alertTier} />
-          {listing.priceDrop && (
-            <PriceDropBadge amount={listing.priceDrop.amount} />
-          )}
-        </div>
+        {/* DISMISSED banner */}
+        {isDismissed && (
+          <div
+            className="absolute top-2 left-2 px-2 py-1 rounded-md"
+            style={{ 
+              background: "rgba(72,79,88,0.9)", 
+              border: "1px solid rgba(72,79,88,0.5)",
+              zIndex: 5 
+            }}
+          >
+            <span
+              className="text-[10px] font-bold tracking-wider"
+              style={{ color: "#8B949E", fontFamily: "var(--font-inter, sans-serif)" }}
+            >
+              DISMISSED
+            </span>
+          </div>
+        )}
+
+        {!isDismissed && (
+          <div className="absolute top-2 left-2 flex flex-col gap-1.5" style={{ zIndex: 5 }}>
+            <TierBadge tier={listing.alertTier} />
+            {listing.priceDrop && (
+              <PriceDropBadge amount={listing.priceDrop.amount} />
+            )}
+          </div>
+        )}
         <div className="absolute top-2 right-2" style={{ zIndex: 5 }}>
           <ScoreBadge score={listing.aiScore} tier={listing.alertTier} />
         </div>
 
-        {/* Bookmark star */}
-        {onToggleBookmark && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleBookmark(listing);
-            }}
-            className="absolute bottom-2 right-2"
-            style={{ zIndex: 5 }}
-            aria-label={isBookmarked ? "Remove bookmark" : "Save home"}
-          >
-            <motion.div
-              whileTap={{ scale: 0.85 }}
-              className="w-7 h-7 rounded-full flex items-center justify-center"
-              style={{
-                background: isBookmarked
-                  ? "rgba(57,211,83,0.2)"
-                  : "rgba(13,17,23,0.7)",
-                border: isBookmarked
-                  ? "1px solid rgba(57,211,83,0.4)"
-                  : "1px solid rgba(255,255,255,0.1)",
-                backdropFilter: "blur(4px)",
-                transition: "background 200ms ease, border-color 200ms ease",
+        {/* Action buttons */}
+        <div className="absolute bottom-2 right-2 flex gap-1.5" style={{ zIndex: 5 }}>
+          {/* Dismiss/Undismiss button */}
+          {(onDismiss || onUndismiss) && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (isDismissed && onUndismiss) {
+                  onUndismiss(listing.id);
+                } else if (!isDismissed && onDismiss) {
+                  onDismiss(listing.id);
+                }
               }}
+              aria-label={isDismissed ? "Undismiss home" : "Dismiss home"}
             >
-              <Star
-                size={13}
-                fill={isBookmarked ? "#39D353" : "none"}
-                stroke={isBookmarked ? "#39D353" : "#8B949E"}
-                strokeWidth={2}
-              />
-            </motion.div>
-          </button>
-        )}
+              <motion.div
+                whileTap={{ scale: 0.85 }}
+                className="w-7 h-7 rounded-full flex items-center justify-center"
+                style={{
+                  background: isDismissed
+                    ? "rgba(72,79,88,0.2)"
+                    : "rgba(13,17,23,0.7)",
+                  border: isDismissed
+                    ? "1px solid rgba(72,79,88,0.4)"
+                    : "1px solid rgba(255,255,255,0.1)",
+                  backdropFilter: "blur(4px)",
+                  transition: "background 200ms ease, border-color 200ms ease",
+                }}
+              >
+                <X
+                  size={13}
+                  stroke={isDismissed ? "#8B949E" : "#8B949E"}
+                  strokeWidth={2}
+                />
+              </motion.div>
+            </button>
+          )}
+
+          {/* Bookmark star */}
+          {onToggleBookmark && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleBookmark(listing);
+              }}
+              aria-label={isBookmarked ? "Remove bookmark" : "Save home"}
+            >
+              <motion.div
+                whileTap={{ scale: 0.85 }}
+                className="w-7 h-7 rounded-full flex items-center justify-center"
+                style={{
+                  background: isBookmarked
+                    ? "rgba(57,211,83,0.2)"
+                    : "rgba(13,17,23,0.7)",
+                  border: isBookmarked
+                    ? "1px solid rgba(57,211,83,0.4)"
+                    : "1px solid rgba(255,255,255,0.1)",
+                  backdropFilter: "blur(4px)",
+                  transition: "background 200ms ease, border-color 200ms ease",
+                }}
+              >
+                <Star
+                  size={13}
+                  fill={isBookmarked ? "#39D353" : "none"}
+                  stroke={isBookmarked ? "#39D353" : "#8B949E"}
+                  strokeWidth={2}
+                />
+              </motion.div>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Content */}
