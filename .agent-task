@@ -1,6 +1,6 @@
-# Agent Task: Days on Market Scoring Factor
+# Agent Task: Dismiss Action
 
-In lib/scorer.ts, pass daysOnMarket in the prompt context with explicit guidance: under 14 = fresh, 15-45 = normal, 46-90 = investigate, 90+ = red flag. After AI returns score, apply post-processing: if daysOnMarket > 60, cap score at max(aiScore - 1, 1). Add daysOnMarketPenalty: boolean to the returned scored listing.
+Add X button to ListingCard (alongside bookmark star). Dismissed zpids go to hyh:dismissed-ids (Redis set, same pattern as seen-ids). Add dismissListing(zpid) and getDismissedIds() to lib/storage.ts. In scrape-pipeline.ts, filter dismissed ids before scoring. In UI, dismissed listings show faded with 'Dismissed' label in history. Add undismiss action.
 
 ## Test requirements
-Unit tests for: DOM penalty application at >60 days, no penalty at 60 days exactly, score floor at 1, penalty flag in output.
+Unit tests for: dismiss storage, pipeline exclusion, undismiss, dismissed ids not re-alerted on price drop.
