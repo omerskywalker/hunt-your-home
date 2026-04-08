@@ -18,6 +18,7 @@ import {
   addPriceEntry,
   getLastPrice,
   calculatePriceDropPercentage,
+  getDismissedIds,
 } from "@/lib/storage";
 import { AlertRecord, ScanRecord } from "@/lib/types";
 
@@ -81,13 +82,14 @@ export async function runScrapePipeline(): Promise<ScanRecord> {
     }
 
     const seenIds = await getSeenIds();
+    const dismissedIds = await getDismissedIds();
     await pruneOldSeenIds();
     const unseen = allListings.filter((l) => !seenIds.has(l.id));
     newListings = unseen.length;
 
-    // Include unseen listings and price-dropped listings for scoring
+    // Include unseen listings and price-dropped listings for scoring, but exclude dismissed listings
     const toScore = allListings.filter((l) => 
-      !seenIds.has(l.id) || priceDroppedIds.has(l.id)
+      (!seenIds.has(l.id) || priceDroppedIds.has(l.id)) && !dismissedIds.has(l.id)
     );
 
     // Cap at 40 per run — prevents runaway AI costs on first run when seenIds is empty.
