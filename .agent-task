@@ -1,6 +1,6 @@
-# Agent Task: Dismiss Action
+# Agent Task: Multi-Area Watching
 
-Add X button to ListingCard (alongside bookmark star). Dismissed zpids go to hyh:dismissed-ids (Redis set, same pattern as seen-ids). Add dismissListing(zpid) and getDismissedIds() to lib/storage.ts. In scrape-pipeline.ts, filter dismissed ids before scoring. In UI, dismissed listings show faded with 'Dismissed' label in history. Add undismiss action.
+Add searchAreas: string[] to UserPreferences in lib/types.ts (alongside existing searchArea for backward compat). Update Settings page with tag-input UI for multiple areas. In scrape-pipeline.ts, run one Apify call per area in parallel (Promise.all), merge results, deduplicate by zpid keeping the first occurrence. Update DEFAULT_PREFERENCES.
 
 ## Test requirements
-Unit tests for: dismiss storage, pipeline exclusion, undismiss, dismissed ids not re-alerted on price drop.
+Unit tests for: multi-area dedup by zpid, parallel fetch merging, backward compat with single searchArea.
