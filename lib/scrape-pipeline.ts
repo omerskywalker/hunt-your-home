@@ -32,7 +32,29 @@ export async function runScrapePipeline(): Promise<ScanRecord> {
 
   try {
     const prefs = await getPreferences();
-    const allListings = await runZillowScraper(prefs.searchArea);
+    
+    // Determine search areas: use searchAreas if populated, otherwise fallback to searchArea
+    const searchAreas = prefs.searchAreas && prefs.searchAreas.length > 0 
+      ? prefs.searchAreas 
+      : [prefs.searchArea];
+    
+    // Run parallel searches for all areas
+    const allResults = await Promise.all(
+      searchAreas.map(area => runZillowScraper(area))
+    );
+    
+    // Merge results and deduplicate by zpid, keeping first occurrence
+    const seenZpids = new Set<string>();
+    const allListings = allResults
+      .flat()
+      .filter(listing => {
+        if (seenZpids.has(listing.id)) {
+          return false;
+        }
+        seenZpids.add(listing.id);
+        return true;
+      });
+      
     listingsFound = allListings.length;
 
     // Health monitoring: check for zero listings
