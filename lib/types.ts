@@ -41,6 +41,7 @@ export interface UserPreferences {
   requireGarage: boolean;
   minYearBuilt: number;
   searchArea: string;
+  searchAreas: string[];
   alertEmail: string;
   scoreThreshold: number;
   hotScoreThreshold: number;
@@ -84,6 +85,7 @@ export const DEFAULT_PREFERENCES: UserPreferences = {
   requireGarage: false,
   minYearBuilt: 1990,
   searchArea: "Frisco, TX",
+  searchAreas: [],
   alertEmail: "",
   scoreThreshold: 6,
   hotScoreThreshold: 8,

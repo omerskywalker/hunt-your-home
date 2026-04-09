@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Check, Cookie, Cloud, AlertCircle } from "lucide-react";
+import { Check, Cookie, Cloud, AlertCircle, X, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { UserPreferences, DEFAULT_PREFERENCES } from "@/lib/types";
 import {
@@ -163,6 +163,102 @@ function Toggle({
           }}
         />
       </button>
+    </div>
+  );
+}
+
+function TagInput({
+  values,
+  onChange,
+  placeholder,
+}: {
+  values: string[];
+  onChange: (values: string[]) => void;
+  placeholder?: string;
+}) {
+  const [inputValue, setInputValue] = useState("");
+  const [focused, setFocused] = useState(false);
+
+  function addTag() {
+    const trimmed = inputValue.trim();
+    if (trimmed && !values.includes(trimmed)) {
+      onChange([...values, trimmed]);
+      setInputValue("");
+    }
+  }
+
+  function removeTag(index: number) {
+    onChange(values.filter((_, i) => i !== index));
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      addTag();
+    } else if (e.key === "Backspace" && !inputValue && values.length > 0) {
+      removeTag(values.length - 1);
+    }
+  }
+
+  return (
+    <div
+      className="min-h-[42px] flex flex-wrap items-center gap-1.5 p-2 rounded-lg transition-all"
+      style={{
+        background: "#0D1510",
+        border: focused ? "1px solid #39D353" : "1px solid #21262D",
+        boxShadow: focused ? "0 0 0 1px rgba(57,211,83,0.3)" : "none",
+      }}
+    >
+      {values.map((value, index) => (
+        <span
+          key={index}
+          className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium"
+          style={{
+            background: "#141C16",
+            color: "#E6EDF3",
+            border: "1px solid #21262D",
+            fontFamily: "var(--font-inter, sans-serif)",
+          }}
+        >
+          {value}
+          <button
+            type="button"
+            onClick={() => removeTag(index)}
+            className="hover:bg-red-500/10 rounded p-0.5 transition-colors"
+            style={{ color: "#8B949E" }}
+          >
+            <X size={10} />
+          </button>
+        </span>
+      ))}
+      
+      <div className="flex items-center gap-1 flex-1 min-w-[120px]">
+        <input
+          type="text"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyDown={handleKeyDown}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          placeholder={values.length === 0 ? placeholder : ""}
+          className="flex-1 bg-transparent outline-none border-none text-sm"
+          style={{
+            color: "#E6EDF3",
+            fontFamily: "var(--font-inter, sans-serif)",
+            minWidth: 0,
+          }}
+        />
+        {inputValue.trim() && (
+          <button
+            type="button"
+            onClick={addTag}
+            className="p-1 rounded hover:bg-green-500/10 transition-colors"
+            style={{ color: "#39D353" }}
+          >
+            <Plus size={12} />
+          </button>
+        )}
+      </div>
     </div>
   );
 }
@@ -387,6 +483,20 @@ export default function SettingsPage() {
               onBlur={blurInput}
               aria-label="Search area"
             />
+            <p className="mt-1.5" style={{ fontSize: 11, color: "#484F58", fontFamily: "var(--font-inter, sans-serif)" }}>
+              Primary search area (for backward compatibility). Use Additional Areas below for multi-area monitoring.
+            </p>
+          </Field>
+
+          <Field label="Additional Areas">
+            <TagInput
+              values={prefs.searchAreas}
+              onChange={(areas) => updatePrefs({ searchAreas: areas })}
+              placeholder="Add more search areas (e.g., Plano, TX)"
+            />
+            <p className="mt-1.5" style={{ fontSize: 11, color: "#484F58", fontFamily: "var(--font-inter, sans-serif)" }}>
+              Add multiple areas to monitor simultaneously. Each scan will search all areas in parallel.
+            </p>
           </Field>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
