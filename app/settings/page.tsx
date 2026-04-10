@@ -484,6 +484,50 @@ export default function SettingsPage() {
               Only listings scoring ≥ {prefs.scoreThreshold} trigger alerts. Scores ≥ {prefs.hotScoreThreshold} are flagged HOT.
             </p>
           </Field>
+
+          <Field label="Daily Digest Time">
+            <div className="flex items-center gap-3">
+              <select
+                value={prefs.digestHour}
+                onChange={(e) => updatePrefs({ digestHour: Number(e.target.value) })}
+                className="rounded-lg"
+                style={{
+                  ...INPUT,
+                  width: "auto",
+                  minWidth: "120px",
+                  cursor: "pointer",
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = "#39D353";
+                  e.target.style.boxShadow = "0 0 0 1px rgba(57,211,83,0.3)";
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = "#21262D";
+                  e.target.style.boxShadow = "none";
+                }}
+                aria-label="Digest hour"
+              >
+                {Array.from({ length: 24 }, (_, i) => {
+                  const hour12 = i === 0 ? 12 : i > 12 ? i - 12 : i;
+                  const ampm = i < 12 ? "AM" : "PM";
+                  return (
+                    <option key={i} value={i} style={{ background: "#0D1510", color: "#E6EDF3" }}>
+                      {hour12}:00 {ampm}
+                    </option>
+                  );
+                })}
+              </select>
+              <Toggle
+                label="Weekly digest"
+                description="Send digest weekly instead of daily"
+                checked={prefs.weeklyDigest}
+                onChange={(v) => updatePrefs({ weeklyDigest: v })}
+              />
+            </div>
+            <p className="mt-1.5" style={{ fontSize: 11, color: "#484F58", fontFamily: "var(--font-inter, sans-serif)" }}>
+              Daily digest sends recent MATCH-tier listings at the specified hour. Weekly digest sends all matches from the past 7 days.
+            </p>
+          </Field>
         </Section>
 
         {/* ── Search Criteria ────────────────────────────── */}

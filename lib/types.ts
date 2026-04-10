@@ -46,6 +46,8 @@ export interface UserPreferences {
   scoreThreshold: number;
   hotScoreThreshold: number;
   ntfyTopic: string;
+  digestHour: number;
+  weeklyDigest: boolean;
 }
 
 export interface AlertRecord {
@@ -91,4 +93,6 @@ export const DEFAULT_PREFERENCES: UserPreferences = {
   scoreThreshold: 6,
   hotScoreThreshold: 8,
   ntfyTopic: "",
+  digestHour: 8,
+  weeklyDigest: false,
 };
