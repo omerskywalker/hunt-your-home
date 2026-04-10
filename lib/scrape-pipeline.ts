@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from "uuid";
 import { runZillowScraper } from "@/lib/apify";
 import { batchScoreListings } from "@/lib/scorer";
 import { matchesHardFilters } from "@/lib/filters";
-import { sendHotAlert, sendMatchDigest, sendHealthAlert } from "@/lib/email";
+import { sendHotAlert, sendMatchDigest, sendHealthAlert, sendNtfyPush } from "@/lib/email";
 import {
   getPreferences,
   getSeenIds,
@@ -166,6 +166,7 @@ export async function runScrapePipeline(): Promise<ScanRecord> {
       for (const listing of hotListings) {
         const delivered = await sendHotAlert(listing, alertEmail);
         if (delivered) alertsSent++;
+        await sendNtfyPush(listing, prefs.ntfyTopic);
         alertRecords.push({ id: uuidv4(), listing, sentAt: new Date().toISOString(), emailDelivered: delivered });
       }
       if (matchListings.length > 0) {
