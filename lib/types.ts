@@ -45,6 +45,7 @@ export interface UserPreferences {
   alertEmail: string;
   scoreThreshold: number;
   hotScoreThreshold: number;
+  ntfyTopic: string;
 }
 
 export interface AlertRecord {
@@ -89,4 +90,5 @@ export const DEFAULT_PREFERENCES: UserPreferences = {
   alertEmail: "",
   scoreThreshold: 6,
   hotScoreThreshold: 8,
+  ntfyTopic: "",
 };

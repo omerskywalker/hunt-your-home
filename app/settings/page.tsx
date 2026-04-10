@@ -430,6 +430,22 @@ export default function SettingsPage() {
             </p>
           </Field>
 
+          <Field label="Push Notification Topic">
+            <input
+              type="text"
+              value={prefs.ntfyTopic}
+              placeholder="my-home-alerts"
+              onChange={(e) => updatePrefs({ ntfyTopic: e.target.value })}
+              style={INPUT}
+              onFocus={focusInput}
+              onBlur={blurInput}
+              aria-label="Push notification topic"
+            />
+            <p className="mt-1.5" style={{ fontSize: 11, color: "#484F58", fontFamily: "var(--font-inter, sans-serif)" }}>
+              ntfy.sh topic for push notifications on HOT listings. Leave empty to disable.
+            </p>
+          </Field>
+
           <Field label="AI Score threshold">
             <div className="space-y-2">
               <div className="flex items-center gap-2">

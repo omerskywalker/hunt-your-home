@@ -66,6 +66,43 @@ export async function sendMatchDigest(
   }
 }
 
+export async function sendNtfyPush(
+  listing: AIScoredListing,
+  topic: string
+): Promise<boolean> {
+  const trimmedTopic = topic.trim();
+  if (!trimmedTopic) {
+    return true;
+  }
+
+  try {
+    const title = `🔥 HOT: ${listing.address}`;
+    const message = `$${listing.price.toLocaleString()} • ${listing.beds}bd/${listing.baths}ba • ${listing.sqft} sqft • Score: ${listing.aiScore}/10`;
+    
+    const response = await fetch(`https://ntfy.sh/${trimmedTopic}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        title,
+        message,
+        priority: 'urgent',
+        tags: ['house'],
+      }),
+    });
+
+    if (!response.ok) {
+      console.error("ntfy push failed:", response.status, response.statusText);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error("sendNtfyPush failed:", err);
+    return false;
+  }
+}
+
 export async function sendHealthAlert(to: string): Promise<boolean> {
   try {
     const resend = getResend();
