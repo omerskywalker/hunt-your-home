@@ -198,6 +198,21 @@ export async function getLastScanRecord(): Promise<ScanRecord | null> {
   }
 }
 
+export async function getScanRecordById(scanId: string): Promise<ScanRecord | null> {
+  try {
+    const items = await kv.lrange(KEYS.SCAN_HISTORY, 0, -1);
+    const found = items.find((item) => {
+      const record = typeof item === "string" ? JSON.parse(item) as ScanRecord : item as ScanRecord;
+      return record.id === scanId;
+    });
+    if (!found) return null;
+    if (typeof found === "string") return JSON.parse(found) as ScanRecord;
+    return found as ScanRecord;
+  } catch {
+    return null;
+  }
+}
+
 // ─── Bookmarks ────────────────────────────────────────────────────────────────
 
 const BOOKMARKS_KEY = "hyh:bookmarks";

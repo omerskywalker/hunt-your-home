@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Activity, FlaskConical, CheckCircle2, XCircle, Clock } from "lucide-react";
+import { Activity, FlaskConical, CheckCircle2, XCircle, Clock, Search } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
 import { ScanRecord } from "@/lib/types";
 import { MOCK_SCAN_HISTORY } from "@/lib/mock-data";
@@ -41,6 +42,7 @@ function StatPill({
 }
 
 function ScanRow({ scan, index }: { scan: ScanRecord; index: number }) {
+  const router = useRouter();
   const hasMatches = scan.matchedListings > 0;
   const timeAgo = formatDistanceToNow(new Date(scan.runAt), { addSuffix: true });
   const timeExact = format(new Date(scan.runAt), "MMM d, h:mm a");
@@ -102,6 +104,16 @@ function ScanRow({ scan, index }: { scan: ScanRecord; index: number }) {
         <Clock size={11} />
         {durationSec}s
       </div>
+
+      {/* Debug button */}
+      <button
+        onClick={() => router.push(`/history/${scan.id}`)}
+        className="shrink-0 p-2 rounded-lg hover:bg-opacity-50 transition-colors"
+        style={{ background: "rgba(255,255,255,0.05)" }}
+        title="Debug scan funnel"
+      >
+        <Search size={14} style={{ color: "#8B949E" }} />
+      </button>
     </motion.div>
   );
 }
