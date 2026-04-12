@@ -1,6 +1,6 @@
-# Agent Task: SMS / Push for HOT Listings
+# Agent Task: Digest Cadence Control
 
-Add ntfyTopic: string to UserPreferences. In lib/email.ts add sendNtfyPush(listing, topic) that POSTs to https://ntfy.sh/{topic} with title, message, priority=urgent, tags=['house']. Call after sendHotAlert in scrape-pipeline.ts. Add ntfyTopic field to Settings page. Gracefully no-ops if topic is empty.
+Add digestHour: number (0-23, default 8) and weeklyDigest: boolean to UserPreferences. Create app/api/digest/route.ts (GET, cron-secret protected) that pulls recent MATCH alerts from KV and sends a digest email. Add to vercel.json crons. Settings UI: time picker for daily digest hour.
 
 ## Test requirements
-Unit tests: mock fetch to ntfy.sh, verify payload shape, no-op when topic empty, priority=urgent on HOT tier only.
+Unit tests: digest aggregation logic, hour validation (0-23), empty digest no-op (no email sent).
