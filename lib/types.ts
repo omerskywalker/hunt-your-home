@@ -65,6 +65,13 @@ export interface ScanRecord {
   matchedListings: number;
   alertsSent: number;
   durationMs: number;
+  funnel?: {
+    found: number;
+    deduped: number;
+    hardFiltered: Array<{zpid: string; reason: string}>;
+    scored: Array<{zpid: string; score: number}>;
+    alerted: string[];
+  };
 }
 
 export interface BookmarkedListing {

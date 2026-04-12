@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 import { runZillowScraper } from "@/lib/apify";
 import { batchScoreListings } from "@/lib/scorer";
-import { matchesHardFilters } from "@/lib/filters";
+import { matchesHardFilters, getHardFilterReason } from "@/lib/filters";
 import { sendHotAlert, sendMatchDigest, sendHealthAlert, sendNtfyPush } from "@/lib/email";
 import {
   getPreferences,
@@ -114,9 +114,24 @@ export async function runScrapePipeline(): Promise<ScanRecord> {
       (!seenIds.has(l.id) || priceDroppedIds.has(l.id)) && !dismissedIds.has(l.id)
     );
 
+    // Build funnel data - track hard filter rejections
+    const hardFilteredOut: Array<{zpid: string; reason: string}> = [];
+    const toScoreAfterHardFilter: typeof toScore = [];
+    
+    for (const listing of toScore) {
+      if (matchesHardFilters(listing, prefs)) {
+        toScoreAfterHardFilter.push(listing);
+      } else {
+        const reason = getHardFilterReason(listing, prefs);
+        if (reason) {
+          hardFilteredOut.push({zpid: listing.id, reason});
+        }
+      }
+    }
+
     // Cap at 40 per run — prevents runaway AI costs on first run when seenIds is empty.
     // Listings are already sorted newest-first by Zillow (sort=days).
-    const filtered = toScore.filter((l) => matchesHardFilters(l, prefs)).slice(0, 40);
+    const filtered = toScoreAfterHardFilter.slice(0, 40);
 
     if (unseen.length > 0) {
       await addSeenIds(unseen.map((l) => l.id));
@@ -131,6 +146,13 @@ export async function runScrapePipeline(): Promise<ScanRecord> {
         matchedListings: 0,
         alertsSent: 0,
         durationMs: Date.now() - startTime,
+        funnel: {
+          found: listingsFound,
+          deduped: toScore.length,
+          hardFiltered: hardFilteredOut,
+          scored: [],
+          alerted: [],
+        },
       };
       await pushScanRecord(scanRecord);
       return scanRecord;
@@ -186,6 +208,15 @@ export async function runScrapePipeline(): Promise<ScanRecord> {
       await pushAlertRecord(record);
     }
 
+    // Build scored funnel data
+    const scoredFunnelData = scored.map(listing => ({
+      zpid: listing.id,
+      score: listing.aiScore,
+    }));
+    
+    // Build alerted array
+    const alertedIds = aboveThreshold.map(listing => listing.id);
+
     const scanRecord: ScanRecord = {
       id: scanId,
       runAt: new Date().toISOString(),
@@ -194,6 +225,13 @@ export async function runScrapePipeline(): Promise<ScanRecord> {
       matchedListings,
       alertsSent,
       durationMs: Date.now() - startTime,
+      funnel: {
+        found: listingsFound,
+        deduped: toScore.length,
+        hardFiltered: hardFilteredOut,
+        scored: scoredFunnelData,
+        alerted: alertedIds,
+      },
     };
     await pushScanRecord(scanRecord);
     return scanRecord;
