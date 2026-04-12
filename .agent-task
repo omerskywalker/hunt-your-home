@@ -1,6 +1,6 @@
-# Agent Task: Digest Cadence Control
+# Agent Task: "Why No Alert?" Debug View
 
-Add digestHour: number (0-23, default 8) and weeklyDigest: boolean to UserPreferences. Create app/api/digest/route.ts (GET, cron-secret protected) that pulls recent MATCH alerts from KV and sends a digest email. Add to vercel.json crons. Settings UI: time picker for daily digest hour.
+Update ScanRecord in lib/types.ts to include funnel: { found, deduped, hardFiltered: Array<{zpid, reason}>, scored: Array<{zpid, score}>, alerted: string[] }. Update scrape-pipeline.ts to populate funnel. Create page app/history/[scanId]/page.tsx showing each funnel stage as a collapsible step with counts and per-listing reasons.
 
 ## Test requirements
-Unit tests: digest aggregation logic, hour validation (0-23), empty digest no-op (no email sent).
+Unit tests: funnel annotation logic, hard-filter reason strings, scored array population.
