@@ -1,6 +1,6 @@
-# Agent Task: "Why No Alert?" Debug View
+# Agent Task: Notes on Bookmarks
 
-Update ScanRecord in lib/types.ts to include funnel: { found, deduped, hardFiltered: Array<{zpid, reason}>, scored: Array<{zpid, score}>, alerted: string[] }. Update scrape-pipeline.ts to populate funnel. Create page app/history/[scanId]/page.tsx showing each funnel stage as a collapsible step with counts and per-listing reasons.
+Add notes: string field to BookmarkedListing in lib/types.ts. Add updateBookmarkNotes(zpid, notes) to lib/storage.ts. Add API endpoint PATCH /api/bookmarks with body {zpid, notes}. On Bookmarks page, each card gets an inline textarea (max 500 chars) that auto-saves on blur with 500ms debounce. Show char count.
 
 ## Test requirements
-Unit tests: funnel annotation logic, hard-filter reason strings, scored array population.
+Unit tests: note save/update/clear, 500 char limit enforcement, debounce logic, PATCH API handler.
