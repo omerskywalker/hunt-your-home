@@ -1,6 +1,6 @@
-# Agent Task: "Why No Alert?" Debug View
+# Agent Task: Listing Detail Page
 
-Update ScanRecord in lib/types.ts to include funnel: { found, deduped, hardFiltered: Array<{zpid, reason}>, scored: Array<{zpid, score}>, alerted: string[] }. Update scrape-pipeline.ts to populate funnel. Create page app/history/[scanId]/page.tsx showing each funnel stage as a collapsible step with counts and per-listing reasons.
+Create app/listings/[zpid]/page.tsx. Data sourced from KV alert history (find by zpid). Show: photo carousel, price in Space Grotesk, beds/baths/sqft stats, AI score badge, aiHighlights list, aiConcerns list, full aiReason text, daysOnMarket, yearBuilt, HOA, Zillow link button. Use Recharts LineChart for price history if available. Match app color scheme exactly.
 
 ## Test requirements
-Unit tests: funnel annotation logic, hard-filter reason strings, scored array population.
+Unit tests: data hydration helper from alert records, zpid lookup logic, price history formatting.
