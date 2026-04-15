@@ -2,10 +2,10 @@ import { getAlertHistory, getPriceHistory } from "@/lib/storage";
 
 export async function GET(
   request: Request,
-  { params }: { params: { zpid: string } }
+  { params }: { params: Promise<{ zpid: string }> }
 ) {
   try {
-    const { zpid } = params;
+    const { zpid } = await params;
     
     if (!zpid) {
       return Response.json(
