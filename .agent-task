@@ -1,6 +1,8 @@
+
 # Agent Task: Notes on Bookmarks
 
 Add notes: string field to BookmarkedListing in lib/types.ts. Add updateBookmarkNotes(zpid, notes) to lib/storage.ts. Add API endpoint PATCH /api/bookmarks with body {zpid, notes}. On Bookmarks page, each card gets an inline textarea (max 500 chars) that auto-saves on blur with 500ms debounce. Show char count.
 
 ## Test requirements
 Unit tests: note save/update/clear, 500 char limit enforcement, debounce logic, PATCH API handler.
+
