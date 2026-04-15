@@ -78,6 +78,7 @@ export interface BookmarkedListing {
   listing: AIScoredListing;
   savedAt: string;
   sold: boolean;
+  notes?: string;
 }
 
 export interface PriceHistoryEntry {
