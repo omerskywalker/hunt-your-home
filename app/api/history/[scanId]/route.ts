@@ -2,10 +2,10 @@ import { getScanRecordById } from "@/lib/storage";
 
 export async function GET(
   request: Request,
-  { params }: { params: { scanId: string } }
+  { params }: { params: Promise<{ scanId: string }> }
 ) {
   try {
-    const { scanId } = params;
+    const { scanId } = await params;
     
     if (!scanId) {
       return Response.json(

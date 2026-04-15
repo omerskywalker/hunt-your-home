@@ -4,7 +4,7 @@ const MONITOR_COOKIE = "_hyh_ok";
 const LOGIN_PATH = "/monitor/login";
 const MONITOR_PREFIX = "/monitor";
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Only guard /monitor/* routes
