@@ -273,6 +273,19 @@ export async function getBookmarkIds(): Promise<Set<string>> {
   }
 }
 
+export async function updateBookmarkNotes(zpid: string, notes: string): Promise<void> {
+  try {
+    const raw = await kv.hget<string>(BOOKMARKS_KEY, zpid);
+    if (!raw) return;
+    const bookmark: BookmarkedListing =
+      typeof raw === "string" ? JSON.parse(raw) : (raw as BookmarkedListing);
+    bookmark.notes = notes;
+    await kv.hset(BOOKMARKS_KEY, { [zpid]: JSON.stringify(bookmark) });
+  } catch {
+    // non-fatal
+  }
+}
+
 // ── Roadmap overrides (runtime status from kickoff API) ───────────────────
 
 export interface RoadmapOverride {

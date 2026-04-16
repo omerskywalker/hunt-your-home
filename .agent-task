@@ -1,6 +1,8 @@
-# Agent Task: Listing Detail Page
 
-Create app/listings/[zpid]/page.tsx. Data sourced from KV alert history (find by zpid). Show: photo carousel, price in Space Grotesk, beds/baths/sqft stats, AI score badge, aiHighlights list, aiConcerns list, full aiReason text, daysOnMarket, yearBuilt, HOA, Zillow link button. Use Recharts LineChart for price history if available. Match app color scheme exactly.
+# Agent Task: Notes on Bookmarks
+
+Add notes: string field to BookmarkedListing in lib/types.ts. Add updateBookmarkNotes(zpid, notes) to lib/storage.ts. Add API endpoint PATCH /api/bookmarks with body {zpid, notes}. On Bookmarks page, each card gets an inline textarea (max 500 chars) that auto-saves on blur with 500ms debounce. Show char count.
 
 ## Test requirements
-Unit tests: data hydration helper from alert records, zpid lookup logic, price history formatting.
+Unit tests: note save/update/clear, 500 char limit enforcement, debounce logic, PATCH API handler.
+

@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Bookmark, FlaskConical, Star } from "lucide-react";
 import { toast } from "sonner";
 import { BookmarkedListing, AIScoredListing } from "@/lib/types";
-import { ListingCard } from "@/components/dashboard/ListingCard";
+import { BookmarkCard } from "@/components/dashboard/BookmarkCard";
 import { MOCK_ALERTS } from "@/lib/mock-data";
 
 const MOCK_ENABLED = process.env.NEXT_PUBLIC_ENABLE_MOCK === "true";
@@ -140,6 +140,29 @@ export default function BookmarksPage() {
     };
   }
 
+  async function handleNotesChange(zpid: string, notes: string) {
+    if (MOCK_ENABLED && mockMode) {
+      const updated = bookmarks.map(bm => 
+        bm.listing.id === zpid ? { ...bm, notes } : bm
+      );
+      setBookmarks(updated);
+      saveMockBookmarks(updated);
+    } else {
+      try {
+        await fetch("/api/bookmarks", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ zpid, notes }),
+        });
+        setBookmarks(bookmarks.map(bm => 
+          bm.listing.id === zpid ? { ...bm, notes } : bm
+        ));
+      } catch {
+        // fail silently
+      }
+    }
+  }
+
   return (
     <div className="max-w-7xl mx-auto">
       {/* Page header */}
@@ -257,11 +280,13 @@ export default function BookmarksPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2, delay: i * 0.05 }}
                   >
-                    <ListingCard
+                    <BookmarkCard
                       record={toAlertRecord(bm)}
                       index={i}
                       isBookmarked={bookmarkedZpids.has(bm.listing.id)}
                       onToggleBookmark={handleToggleBookmark}
+                      notes={bm.notes || ""}
+                      onNotesChange={handleNotesChange}
                     />
                   </motion.div>
                 ))}
@@ -302,12 +327,14 @@ export default function BookmarksPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2, delay: i * 0.05 }}
                   >
-                    <ListingCard
+                    <BookmarkCard
                       record={toAlertRecord(bm)}
                       index={i}
                       isBookmarked={bookmarkedZpids.has(bm.listing.id)}
                       onToggleBookmark={handleToggleBookmark}
                       showSoldBanner
+                      notes={bm.notes || ""}
+                      onNotesChange={handleNotesChange}
                     />
                   </motion.div>
                 ))}
