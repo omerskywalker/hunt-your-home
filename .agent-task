@@ -1,8 +1,6 @@
+# Agent Task: Comparison Mode
 
-# Agent Task: Notes on Bookmarks
-
-Add notes: string field to BookmarkedListing in lib/types.ts. Add updateBookmarkNotes(zpid, notes) to lib/storage.ts. Add API endpoint PATCH /api/bookmarks with body {zpid, notes}. On Bookmarks page, each card gets an inline textarea (max 500 chars) that auto-saves on blur with 500ms debounce. Show char count.
+Add checkbox to listing cards (visible on hover). When 2-3 selected, a 'Compare' button appears. Opens a full-screen drawer/modal with side-by-side columns: price, price/sqft, beds, baths, sqft, yearBuilt, HOA, AI score, top 2 highlights, top concern. Use framer-motion for drawer animation. Match app card styling.
 
 ## Test requirements
-Unit tests: note save/update/clear, 500 char limit enforcement, debounce logic, PATCH API handler.
-
+Unit tests: comparison data normalization, max 3 selection enforcement, price/sqft calculation.

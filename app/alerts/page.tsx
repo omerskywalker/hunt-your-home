@@ -2,11 +2,12 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Bell, FlaskConical, Star } from "lucide-react";
+import { Bell, FlaskConical, Star, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 import { AlertRecord, BookmarkedListing, AIScoredListing } from "@/lib/types";
 import { ListingCard } from "@/components/dashboard/ListingCard";
 import { EmptyState } from "@/components/dashboard/EmptyState";
+import { ComparisonDrawer } from "@/components/dashboard/ComparisonDrawer";
 import { MOCK_ALERTS } from "@/lib/mock-data";
 
 const MOCK_ENABLED = process.env.NEXT_PUBLIC_ENABLE_MOCK === "true";
@@ -51,6 +52,8 @@ export default function AlertsPage() {
   const [loading, setLoading] = useState(true);
   const [mockMode, setMockMode] = useState(false);
   const [bookmarks, setBookmarks] = useState<BookmarkedListing[]>([]);
+  const [selectedForComparison, setSelectedForComparison] = useState<AIScoredListing[]>([]);
+  const [showComparisonDrawer, setShowComparisonDrawer] = useState(false);
 
   useEffect(() => {
     if (!MOCK_ENABLED) return;
@@ -89,6 +92,24 @@ export default function AlertsPage() {
       void fetchBookmarks();
     }
   }, [mockMode, fetchAlerts, fetchBookmarks]);
+
+  function handleToggleComparison(listing: AIScoredListing) {
+    const isSelected = selectedForComparison.some((l) => l.id === listing.id);
+    
+    if (isSelected) {
+      // Remove from selection
+      setSelectedForComparison(prev => prev.filter(l => l.id !== listing.id));
+    } else {
+      // Add to selection (max 3)
+      setSelectedForComparison(prev => {
+        if (prev.length >= 3) {
+          toast("Maximum 3 homes can be compared", { icon: <BarChart3 size={14} /> });
+          return prev;
+        }
+        return [...prev, listing];
+      });
+    }
+  }
 
   function handleToggleBookmark(listing: AIScoredListing) {
     const exists = bookmarks.some((b) => b.listing.id === listing.id);
@@ -185,6 +206,41 @@ export default function AlertsPage() {
         )}
       </div>
 
+      {/* Compare button (shown when 2-3 selected) */}
+      {selectedForComparison.length >= 2 && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          className="fixed bottom-8 left-1/2 z-40"
+          style={{ transform: "translateX(-50%)" }}
+        >
+          <button
+            onClick={() => setShowComparisonDrawer(true)}
+            className="flex items-center gap-2 px-6 py-3 rounded-full font-semibold shadow-lg transition-all duration-200"
+            style={{
+              background: "#39D353",
+              color: "#080E0A",
+              fontFamily: "var(--font-inter, sans-serif)",
+              border: "1px solid rgba(255,255,255,0.1)",
+            }}
+            onMouseEnter={(e) => {
+              const el = e.currentTarget as HTMLButtonElement;
+              el.style.transform = "scale(1.05)";
+              el.style.boxShadow = "0 8px 32px rgba(57,211,83,0.4)";
+            }}
+            onMouseLeave={(e) => {
+              const el = e.currentTarget as HTMLButtonElement;
+              el.style.transform = "scale(1)";
+              el.style.boxShadow = "0 4px 24px rgba(0,0,0,0.4)";
+            }}
+          >
+            <BarChart3 size={18} />
+            Compare {selectedForComparison.length} Homes
+          </button>
+        </motion.div>
+      )}
+
       {/* Content */}
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -229,6 +285,9 @@ export default function AlertsPage() {
                       index={i}
                       isBookmarked={bookmarkedZpids.has(record.listing.id)}
                       onToggleBookmark={handleToggleBookmark}
+                      showComparisonCheckbox={true}
+                      isSelectedForComparison={selectedForComparison.some(l => l.id === record.listing.id)}
+                      onToggleComparison={handleToggleComparison}
                     />
                   </motion.div>
                 ))}
@@ -271,6 +330,9 @@ export default function AlertsPage() {
                       index={i}
                       isBookmarked={bookmarkedZpids.has(record.listing.id)}
                       onToggleBookmark={handleToggleBookmark}
+                      showComparisonCheckbox={true}
+                      isSelectedForComparison={selectedForComparison.some(l => l.id === record.listing.id)}
+                      onToggleComparison={handleToggleComparison}
                     />
                   </motion.div>
                 ))}
@@ -279,6 +341,13 @@ export default function AlertsPage() {
           )}
         </div>
       )}
+
+      {/* Comparison Drawer */}
+      <ComparisonDrawer
+        isOpen={showComparisonDrawer}
+        onClose={() => setShowComparisonDrawer(false)}
+        listings={selectedForComparison}
+      />
     </div>
   );
 }

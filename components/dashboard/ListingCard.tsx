@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ExternalLink, Bed, Bath, Maximize2, Calendar, Star, X } from "lucide-react";
+import { ExternalLink, Bed, Bath, Maximize2, Calendar, Star, X, Check } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import Image from "next/image";
 import { AlertRecord, AIScoredListing } from "@/lib/types";
@@ -16,6 +16,9 @@ interface ListingCardProps {
   isDismissed?: boolean;
   onDismiss?: (zpid: string) => void;
   onUndismiss?: (zpid: string) => void;
+  isSelectedForComparison?: boolean;
+  onToggleComparison?: (listing: AIScoredListing) => void;
+  showComparisonCheckbox?: boolean;
 }
 
 function ScoreBadge({ score, tier }: { score: number; tier: "HOT" | "MATCH" }) {
@@ -99,6 +102,9 @@ export function ListingCard({
   isDismissed = false,
   onDismiss,
   onUndismiss,
+  isSelectedForComparison = false,
+  onToggleComparison,
+  showComparisonCheckbox = false,
 }: ListingCardProps) {
   const { listing, sentAt } = record;
   const photoUrl = listing.photos?.[0];
@@ -211,6 +217,40 @@ export function ListingCard({
         <div className="absolute top-2 right-2" style={{ zIndex: 5 }}>
           <ScoreBadge score={listing.aiScore} tier={listing.alertTier} />
         </div>
+
+        {/* Comparison checkbox (visible on hover) */}
+        {showComparisonCheckbox && onToggleComparison && !showSoldBanner && !isDismissed && (
+          <div className="absolute bottom-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200" style={{ zIndex: 5 }}>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleComparison(listing);
+              }}
+              aria-label={isSelectedForComparison ? "Remove from comparison" : "Add to comparison"}
+            >
+              <motion.div
+                whileTap={{ scale: 0.85 }}
+                className="w-7 h-7 rounded-full flex items-center justify-center"
+                style={{
+                  background: isSelectedForComparison
+                    ? "rgba(57,211,83,0.2)"
+                    : "rgba(13,17,23,0.7)",
+                  border: isSelectedForComparison
+                    ? "1px solid rgba(57,211,83,0.4)"
+                    : "1px solid rgba(255,255,255,0.1)",
+                  backdropFilter: "blur(4px)",
+                  transition: "background 200ms ease, border-color 200ms ease",
+                }}
+              >
+                <Check
+                  size={13}
+                  stroke={isSelectedForComparison ? "#39D353" : "#8B949E"}
+                  strokeWidth={2}
+                />
+              </motion.div>
+            </button>
+          </div>
+        )}
 
         {/* Action buttons */}
         <div className="absolute bottom-2 right-2 flex gap-1.5" style={{ zIndex: 5 }}>
